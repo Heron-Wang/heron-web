@@ -199,6 +199,35 @@ nav .theme-btn{cursor:pointer;font-size:1.2rem;min-width:44px;min-height:44px;di
 .portfolio-item .meta .updated{color:var(--orange)}
 .portfolio-item .meta .badge-new{display:inline-block;padding:0.1rem 0.5rem;border-radius:10px;font-size:0.7rem;background:rgba(255,159,28,0.15);color:var(--orange);border:1px solid rgba(255,159,28,0.3)}
 
+/* ── 时间轴 ── */
+.timeline-wrap{max-width:800px;margin:0 auto;padding:1rem 0}
+.timeline{position:relative;padding:0 0 0 2rem}
+.timeline::before{content:'';position:absolute;left:0.5rem;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--cyan),var(--blue),var(--purple),transparent)}
+.tl-date{position:relative;margin-bottom:2rem}
+.tl-date::before{content:'';position:absolute;left:-1.6rem;top:0.3rem;width:0.7rem;height:0.7rem;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan);border:2px solid var(--bg)}
+.tl-date-label{font-size:0.82rem;color:var(--cyan);font-weight:bold;margin-bottom:0.5rem;font-family:monospace}
+.tl-items{display:flex;flex-direction:column;gap:0.8rem}
+.tl-item{display:flex;align-items:flex-start;gap:0.6rem;padding:0.8rem 1rem;background:var(--card);border:1px solid var(--border);border-radius:10px;transition:all .2s;cursor:pointer}
+.tl-item:hover{border-color:rgba(0,245,212,0.3);transform:translateX(4px)}
+.tl-item .tl-icon{font-size:1.1rem;flex-shrink:0}
+.tl-item .tl-body{flex:1;min-width:0}
+.tl-item .tl-title{font-size:0.9rem;color:var(--text);margin-bottom:0.2rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tl-item .tl-cat{font-size:0.72rem;color:var(--muted)}
+.tl-item.note .tl-icon{color:var(--blue)}
+.tl-item.project .tl-icon{color:var(--purple)}
+
+/* ── 关于页 ── */
+.about-wrap{max-width:700px;margin:0 auto;padding:2rem 0}
+.about-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2.5rem;margin-bottom:1.5rem}
+.about-card h2{color:var(--cyan);font-size:1.4rem;margin-bottom:1rem}
+.about-card p{line-height:1.8;color:var(--text);margin-bottom:0.8rem;font-size:0.95rem}
+.about-card .about-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-top:1.5rem}
+.about-card .about-stat{background:rgba(0,0,0,0.15);border-radius:10px;padding:1rem;text-align:center}
+.about-card .about-stat .num{font-size:1.8rem;font-weight:bold;color:var(--cyan)}
+.about-card .about-stat .label{font-size:0.8rem;color:var(--muted);margin-top:0.3rem}
+.about-tags{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:1rem}
+.about-tags span{font-size:0.78rem;padding:0.2rem 0.7rem;border-radius:10px;background:rgba(0,187,249,0.15);color:var(--blue)}
+
 /* ── 图片灯箱 ── */
 .lightbox{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;padding:2rem}
 .lightbox img{max-width:95%;max-height:95%;border-radius:8px}
@@ -251,6 +280,8 @@ footer{text-align:center;padding:2rem;color:var(--muted);font-size:0.82rem;borde
 <a data-page="notes" onclick="go('notes')">笔记</a>
 <a data-page="guestbook" onclick="go('guestbook')">留言</a>
 <a data-page="portfolio" onclick="go('portfolio')">作品集</a>
+<a data-page="timeline" onclick="go('timeline')">时间轴</a>
+<a data-page="about" onclick="go('about')">关于</a>
 <span class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙</span>
 </div>
 </div>
@@ -265,6 +296,8 @@ footer{text-align:center;padding:2rem;color:var(--muted);font-size:0.82rem;borde
 <a onclick="go('notes');closeMobileMenu()">笔记</a>
 <a onclick="go('guestbook');closeMobileMenu()">留言</a>
 <a onclick="go('portfolio');closeMobileMenu()">作品集</a>
+<a onclick="go('timeline');closeMobileMenu()">时间轴</a>
+<a onclick="go('about');closeMobileMenu()">关于</a>
 <a onclick="toggleTheme();closeMobileMenu()" id="themeBtnMobile">🌙 切换主题</a>
 </div>
 
@@ -341,6 +374,51 @@ footer{text-align:center;padding:2rem;color:var(--muted);font-size:0.82rem;borde
 <div class="portfolio-grid" id="portfolioGrid"></div>
 </div>
 
+<!-- 时间轴 -->
+<div class="page" id="page-timeline">
+<div class="section-header"><h2>⏳ 时间轴</h2><p style="color:var(--muted);font-size:0.88rem;margin-top:0.3rem">笔记与项目的时间线，从早到近</p></div>
+<div class="timeline-wrap">
+<div class="timeline" id="timelineList"></div>
+</div>
+</div>
+
+<!-- 关于 -->
+<div class="page" id="page-about">
+<div class="section-header"><h2>👋 关于</h2></div>
+<div class="about-wrap">
+<div class="about-card">
+<h2>Heron Wang</h2>
+<p>技术探索者 · 踩坑记录者 · 开源爱好者</p>
+<p>热爱用代码解决问题，关注 Web 开发、系统编程和 DevOps 实践。日常使用 Rust / Python / JavaScript，通过 Cloudflare Tunnel 在自家 NAS 上部署各种小工具和游戏。</p>
+<p>这个网站本身用纯 Rust 标准库手写 HTTP 服务器，零第三方依赖。所有项目独立部署，源码开放在 GitHub。</p>
+<div class="about-grid">
+<div class="about-stat"><div class="num" id="aboutNotes">-</div><div class="label">技术笔记</div></div>
+<div class="about-stat"><div class="num" id="aboutProjects">-</div><div class="label">线上项目</div></div>
+<div class="about-stat"><div class="num" id="aboutVisits">-</div><div class="label">累计访问</div></div>
+<div class="about-stat"><div class="num" id="aboutDays">-</div><div class="label">运行天数</div></div>
+</div>
+<div class="about-tags">
+<span>Rust</span><span>Python</span><span>JavaScript</span><span>Cloudflare</span>
+<span>Linux</span><span>NAS</span><span>VSCode Remote-SSH</span>
+<span>Git</span><span>SQLite</span><span>Canvas</span><span>Docker</span>
+</div>
+</div>
+<div class="about-card">
+<h2>技术栈</h2>
+<p><strong>后端</strong>：Rust (纯 std HTTP Server)、Python (http.server / FastAPI)</p>
+<p><strong>前端</strong>：原生 HTML/CSS/JS、Canvas API</p>
+<p><strong>部署</strong>：Cloudflare Tunnel + NAS (Debian 12)、systemd 服务管理</p>
+<p><strong>工具</strong>：Git、VSCode Remote-SSH、cargo、ruff、pytest</p>
+</div>
+<div class="about-card">
+<h2>联系方式</h2>
+<p>📧 通过网站留言板交流</p>
+<p>📦 GitHub: <a href="https://github.com/Heron-Wang" target="_blank">Heron-Wang</a></p>
+<p>🌐 域名: heronwang.cn</p>
+</div>
+</div>
+</div>
+
 </div>
 
 <footer>Powered by Rust · Cloudflare Tunnel · heronwang.cn</footer>
@@ -362,8 +440,10 @@ function go(page, param){
   if(page==='notes') loadNotes(param);
   if(page==='guestbook') loadGuestbook();
   if(page==='portfolio') loadPortfolio();
+  if(page==='timeline') loadTimeline();
+  if(page==='about') loadAbout();
   // SEO: 动态标题
-  const titles={home:'Heron Wang · 个人空间',notes:'技术笔记 · Heron Wang',guestbook:'访客留言 · Heron Wang',portfolio:'作品集 · Heron Wang'};
+  const titles={home:'Heron Wang · 个人空间',notes:'技术笔记 · Heron Wang',guestbook:'访客留言 · Heron Wang',portfolio:'作品集 · Heron Wang',timeline:'时间轴 · Heron Wang',about:'关于 · Heron Wang'};
   document.title=titles[page]||'Heron Wang';
   window.scrollTo(0,0);
   closeMobileMenu();
@@ -777,6 +857,100 @@ async function loadPortfolio(){
     (isRecent?'<span class="badge-new">最近更新</span>':'')+
     '</div></div>';
   }).join('');
+}
+
+// ── 时间轴 ──────────────────────────────
+async function loadTimeline(){
+  const el=document.getElementById('timelineList');
+  if(!el)return;
+  el.innerHTML='<div style="text-align:center;color:var(--muted);padding:2rem">加载中...</div>';
+  try{
+    const [notesRes,projRes]=await Promise.all([
+      fetch('/api/notes'),
+      fetch('/api/portfolio',{cache:'no-cache'})
+    ]);
+    const notesData=await notesRes.json();
+    const notes=notesData.data||notesData.notes||[];
+    const projects=await projRes.json();
+
+    // Merge into timeline items
+    const items=[];
+    notes.forEach(n=>items.push({
+      date:n.created_at.substring(0,10),
+      type:'note',
+      icon:'📝',
+      title:n.title,
+      cat:n.category||'',
+      id:n.id
+    }));
+    projects.forEach(p=>{
+      // Use updated_at if different from created_at, else created_at
+      const upd=p.updated_at?p.updated_at.substring(0,10):p.created_at.substring(0,10);
+      items.push({date:p.created_at.substring(0,10),type:'project',icon:'🚀',title:p.title,cat:'项目上线',url:p.url});
+      if(p.updated_at&&p.updated_at.substring(0,10)!==p.created_at.substring(0,10)){
+        items.push({date:upd,type:'project',icon:'🔄',title:p.title+' 更新',cat:'项目更新',url:p.url});
+      }
+    });
+
+    // Sort by date ascending (old at bottom, new at top)
+    items.sort((a,b)=>a.date.localeCompare(b.date));
+
+    // Group by date
+    const groups={};
+    items.forEach(it=>{
+      if(!groups[it.date])groups[it.date]=[];
+      groups[it.date].push(it);
+    });
+
+    // Render: newest at top
+    const dates=Object.keys(groups).sort((a,b)=>b.localeCompare(a));
+    el.innerHTML=dates.map(date=>{
+      const dayItems=groups[date];
+      return '<div class="tl-date">'+
+        '<div class="tl-date-label">📅 '+date+'</div>'+
+        '<div class="tl-items">'+
+        dayItems.map(it=>{
+          const click=it.type==='note'?'go(\'notes\','+it.id+')':(it.url?'window.open(\''+it.url+'\')':'');
+          return '<div class="tl-item '+it.type+'" onclick="'+click+'">'+
+            '<span class="tl-icon">'+it.icon+'</span>'+
+            '<div class="tl-body">'+
+            '<div class="tl-title">'+escapeHtml(it.title)+'</div>'+
+            '<div class="tl-cat">'+escapeHtml(it.cat)+'</div>'+
+            '</div></div>';
+        }).join('')+
+        '</div></div>';
+    }).join('');
+  }catch(e){
+    el.innerHTML='<div style="color:var(--red);padding:1rem">加载失败: '+e.message+'</div>';
+  }
+}
+
+// ── 关于页 ──────────────────────────────
+async function loadAbout(){
+  try{
+    const [notesRes,projRes,statsRes]=await Promise.all([
+      fetch('/api/notes'),
+      fetch('/api/portfolio',{cache:'no-cache'}),
+      fetch('/api/stats',{cache:'no-cache'})
+    ]);
+    const notesData=await notesRes.json();
+    const notes=notesData.data||notesData.notes||[];
+    const projects=await projRes.json();
+    const stats=await statsRes.json();
+
+    const el1=document.getElementById('aboutNotes');
+    const el2=document.getElementById('aboutProjects');
+    const el3=document.getElementById('aboutVisits');
+    const el4=document.getElementById('aboutDays');
+    if(el1)el1.textContent=notes.length;
+    if(el2)el2.textContent=projects.length;
+    if(el3)el3.textContent=stats.total_visits||'-';
+    if(el4){
+      const firstDate=notes.length?notes[notes.length-1].created_at.substring(0,10):'2026-08-06';
+      const days=Math.floor((new Date()-new Date(firstDate))/86400000)+1;
+      el4.textContent=days;
+    }
+  }catch(e){console.error('loadAbout error:',e);}
 }
 
 // ── 访问统计 + 心跳 ────────────────────────
