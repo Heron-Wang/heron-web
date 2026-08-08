@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Background circle -->
+  <circle cx="32" cy="32" r="30" fill="#0f0f23"/>
+  <!-- Heron body (elegant S-curve neck) -->
+  <!-- Neck -->
+  <path d="M40 12 Q36 20 30 26 Q26 30 24 36 Q22 42 26 48" stroke="#00f5d4" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Head -->
+  <ellipse cx="41" cy="12" rx="3.5" ry="2.5" fill="#00f5d4" transform="rotate(-20 41 12)"/>
+  <!-- Beak -->
+  <path d="M44 11 L48 10 L44 12 Z" fill="#fee440"/>
+  <!-- Eye -->
+  <circle cx="41" cy="11.5" r="0.8" fill="#0f0f23"/>
+  <!-- Body -->
+  <path d="M26 48 Q22 50 24 54 Q28 56 34 54 Q38 52 36 48 Q32 46 26 48 Z" fill="#00bbf9"/>
+  <!-- Wing feathers -->
+  <path d="M28 48 Q30 52 34 53" stroke="#00f5d4" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M26 50 Q28 54 32 55" stroke="#00f5d4" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <!-- Legs -->
+  <line x1="30" y1="54" x2="29" y2="58" stroke="#fee440" stroke-width="1.2" stroke-linecap="round"/>
+  <line x1="33" y1="54" x2="34" y2="58" stroke="#fee440" stroke-width="1.2" stroke-linecap="round"/>
+  <!-- Crest feather -->
+  <path d="M39 10 Q35 6 33 4" stroke="#9b5de5" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M40 9 Q37 5 36 3" stroke="#9b5de5" stroke-width="1" fill="none" stroke-linecap="round"/>
+</svg>

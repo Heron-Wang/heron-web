@@ -11,6 +11,7 @@ use crate::store::Store;
 use crate::utils::json_escape;
 
 pub const INDEX_HTML: &str = include_str!("index.html");
+pub const FAVICON_SVG: &str = include_str!("../static/favicon.svg");
 
 // ── HTTP 请求结构 ──────────────────────────────────
 
@@ -189,6 +190,10 @@ pub fn handle_get(stream: &mut TcpStream, req: &Request, ip: &str, store: &Arc<S
 
     if path == "/health" {
         send_json(stream, r#"{"status":"ok"}"#, 200, Some("no-cache"));
+        return;
+    }
+    if path == "/favicon.svg" {
+        send_text(stream, FAVICON_SVG, 200, "image/svg+xml");
         return;
     }
 
