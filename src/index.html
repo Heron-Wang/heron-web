@@ -233,7 +233,7 @@ function renderMarkdown(md){
   md=md.replace(/```(\w*)\n([\s\S]*?)```/g,(m,lang,code)=>{
     const idx=codeBlocks.length;
     codeBlocks.push({lang,code:code.replace(/\n$/,'')});
-    return '\\x00CODEBLOCK'+idx+'\\x00';
+    return 'XXCODEBLOCK'+idx+'XXEND';
   });
   // 转义 HTML
   let html=escapeHtml(md);
@@ -276,7 +276,7 @@ function renderMarkdown(md){
   // 换行
   html=html.replace(/\n/g,'<br>');
   // 还原代码块
-  html=html.replace(/\x00CODEBLOCK(\d+)\x00/g,(m,idx)=>{
+  html=html.replace(/XXCODEBLOCK(\d+)XXEND/g,(m,idx)=>{
     const b=codeBlocks[parseInt(idx)];
     return '<pre class="md-pre"><code class="md-codeblock">'+b.code+'</code></pre>';
   });
