@@ -99,6 +99,79 @@ pub fn handle_post(stream: &mut TcpStream, req: &Request, ip: &str, store: &Arc<
     send_json(stream, r#"{"error":"not found"}"#, 404, Some("no-cache"));
 }
 
+// ── PUT 路由处理 ───────────────────────────────────
+pub fn handle_put(stream: &mut TcpStream, req: &Request, store: &Arc<Store>) {
+    let path = req.path.split('?').next().unwrap_or("/");
+
+    // PUT /api/portfolio/<id> — 更新作品
+    if path.starts_with("/api/portfolio/") {
+        if !req.check_token() {
+            send_json(stream, r#"{"error":"unauthorized"}"#, 401, Some("no-cache"));
+            return;
+        }
+        let id_str = &path["/api/portfolio/".len()..];
+        let id: i64 = match id_str.parse() {
+            Ok(v) => v,
+            Err(_) => {
+                send_json(stream, r#"{"error":"invalid id"}"#, 400, Some("no-cache"));
+                return;
+            }
+        };
+        match handle_update_portfolio(id, req, store) {
+            Ok(result) => send_json(stream, &result, 200, Some("no-cache")),
+            Err(e) => send_json(
+                stream,
+                &format!(r#"{{"error":"{}"}}"#, json_escape(&e)),
+                400,
+                Some("no-cache"),
+            ),
+        }
+        return;
+    }
+
+    send_json(stream, r#"{"error":"not found"}"#, 404, Some("no-cache"));
+}
+
+fn handle_update_portfolio(id: i64, req: &Request, store: &Arc<Store>) -> Result<String, String> {
+    if req.body.is_empty() {
+        return Err("empty body".to_string());
+    }
+    let parsed = JsonParser::parse(&req.body).map_err(|e| format!("invalid JSON: {}", e))?;
+
+    let title = parsed.get("title").and_then(|v| v.as_str());
+    let description = parsed.get("description").and_then(|v| v.as_str());
+    let url = parsed.get("url").and_then(|v| v.as_str());
+    let repo_url = parsed.get("repo_url").and_then(|v| v.as_str());
+    let updated_at = parsed.get("updated_at").and_then(|v| v.as_str());
+    let sort_order = parsed
+        .get("sort_order")
+        .and_then(|v| v.as_number())
+        .map(|n| n as i64);
+
+    let tech_stack = parsed.get("tech_stack").map(|v| {
+        v.as_array()
+            .map(|arr| arr.iter().filter_map(|item| item.as_str().map(|s| s.to_string())).collect())
+            .unwrap_or_default()
+    });
+
+    let ok = store.update_portfolio(
+        id,
+        title,
+        description,
+        url,
+        repo_url,
+        tech_stack,
+        sort_order,
+        updated_at,
+    );
+
+    if ok {
+        Ok(format!(r#"{{"id":{},"status":"updated"}}"#, id))
+    } else {
+        Err("portfolio item not found".to_string())
+    }
+}
+
 // ── DELETE 路由处理 ──────────────────────────────────
 
 pub fn handle_delete(stream: &mut TcpStream, req: &Request, store: &Arc<Store>) {

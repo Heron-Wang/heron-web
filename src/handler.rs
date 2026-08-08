@@ -4,7 +4,7 @@ use std::io::Write;
 use std::net::TcpStream;
 use std::sync::Arc;
 
-use crate::api::{handle_delete, handle_post};
+use crate::api::{handle_delete, handle_post, handle_put};
 use crate::routes::{handle_get, Request};
 use crate::store::Store;
 
@@ -18,6 +18,7 @@ pub fn handle_request(stream: &mut TcpStream, req: &Request, store: &Arc<Store>)
         }
         "GET" => handle_get(stream, req, &ip, store),
         "POST" => handle_post(stream, req, &ip, store),
+        "PUT" => handle_put(stream, req, store),
         "DELETE" => handle_delete(stream, req, store),
         _ => {
             send_text(stream, "Method Not Allowed", 405, "text/plain");

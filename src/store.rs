@@ -10,6 +10,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::json::{JsonParser, JsonValue};
 use crate::models::{GuestbookEntry, Note, PortfolioItem};
+use crate::utils::now_iso;
 use crate::utils::json_escape;
 
 // ── 存储 ──────────────────────────────────────────
@@ -258,5 +259,51 @@ impl Store {
 
     pub fn get_total_visits(&self) -> i64 {
         *self.total_visits.lock().unwrap()
+    }
+
+    pub fn update_portfolio(
+        &self,
+        id: i64,
+        title: Option<&str>,
+        description: Option<&str>,
+        url: Option<&str>,
+        repo_url: Option<&str>,
+        tech_stack: Option<Vec<String>>,
+        sort_order: Option<i64>,
+        updated_at: Option<&str>,
+    ) -> bool {
+        let mut pf = self.portfolio.lock().unwrap();
+        let item = pf.iter_mut().find(|p| p.id == id);
+        if item.is_none() {
+            drop(pf);
+            return false;
+        }
+        let it = item.unwrap();
+        if let Some(t) = title {
+            it.title = t.to_string();
+        }
+        if let Some(d) = description {
+            it.description = d.to_string();
+        }
+        if let Some(u) = url {
+            it.url = u.to_string();
+        }
+        if let Some(r) = repo_url {
+            it.repo_url = r.to_string();
+        }
+        if let Some(ts) = tech_stack {
+            it.tech_stack = ts;
+        }
+        if let Some(so) = sort_order {
+            it.sort_order = so;
+        }
+        if let Some(ua) = updated_at {
+            it.updated_at = ua.to_string();
+        } else {
+            it.updated_at = now_iso();
+        }
+        drop(pf);
+        self.save_portfolio();
+        true
     }
 }

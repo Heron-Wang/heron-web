@@ -41,6 +41,7 @@ pub struct PortfolioItem {
     pub tech_stack: Vec<String>,
     pub sort_order: i64,
     pub created_at: String,
+    pub updated_at: String,
 }
 
 // ── 序列化 ────────────────────────────────────────
@@ -132,7 +133,7 @@ impl GuestbookEntry {
 impl PortfolioItem {
     pub fn to_json(&self) -> String {
         format!(
-            r#"{{"id":{},"title":"{}","description":"{}","url":"{}","repo_url":"{}","tech_stack":{},"sort_order":{},"created_at":"{}"}}"#,
+            r#"{{"id":{},"title":"{}","description":"{}","url":"{}","repo_url":"{}","tech_stack":{},"sort_order":{},"created_at":"{}","updated_at":"{}"}}"#,
             self.id,
             json_escape(&self.title),
             json_escape(&self.description),
@@ -141,6 +142,7 @@ impl PortfolioItem {
             json_string_array(&self.tech_stack),
             self.sort_order,
             json_escape(&self.created_at),
+            json_escape(&self.updated_at),
         )
     }
 
@@ -158,6 +160,10 @@ impl PortfolioItem {
             tech_stack: json_array_to_strings(obj.get("tech_stack")?),
             sort_order: obj.get("sort_order")?.as_number().unwrap_or(0.0) as i64,
             created_at: obj.get("created_at")?.as_str().unwrap_or("").to_string(),
+            updated_at: obj.get("updated_at")
+                .and_then(|u| u.as_str())
+                .unwrap_or("")
+                .to_string(),
         })
     }
 }

@@ -331,7 +331,8 @@ impl Store {
             repo_url: repo_url.to_string(),
             tech_stack,
             sort_order,
-            created_at: now,
+            created_at: now.clone(),
+            updated_at: now,
         });
         drop(pf);
         self.save_portfolio();

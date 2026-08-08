@@ -195,6 +195,9 @@ nav .theme-btn{cursor:pointer;font-size:1.2rem;min-width:44px;min-height:44px;di
 .portfolio-item .links a{font-size:0.85rem;padding:0.4rem 1rem;border-radius:8px;background:rgba(0,245,212,0.1);border:1px solid rgba(0,245,212,0.3);color:var(--cyan);text-decoration:none;transition:all .2s;min-height:36px;display:flex;align-items:center}
 .portfolio-item .links a:hover{background:rgba(0,245,212,0.2)}
 .portfolio-item .links a.secondary{background:rgba(155,93,229,0.1);border-color:rgba(155,93,229,0.3);color:var(--purple)}
+.portfolio-item .meta{display:flex;gap:1rem;align-items:center;margin-top:0.8rem;padding-top:0.8rem;border-top:1px solid var(--border);font-size:0.78rem;color:var(--muted)}
+.portfolio-item .meta .updated{color:var(--orange)}
+.portfolio-item .meta .badge-new{display:inline-block;padding:0.1rem 0.5rem;border-radius:10px;font-size:0.7rem;background:rgba(255,159,28,0.15);color:var(--orange);border:1px solid rgba(255,159,28,0.3)}
 
 /* ── 图片灯箱 ── */
 .lightbox{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;padding:2rem}
@@ -753,16 +756,27 @@ async function loadPortfolio(){
   const list=await r.json();
   const el=document.getElementById('portfolioGrid');
   if(!list.length){el.innerHTML='<div class="empty">暂无作品，敬请期待。</div>';return;}
-  el.innerHTML=list.map(p=>
-    '<div class="portfolio-item">'+
+  const now=new Date();
+  el.innerHTML=list.map(p=>{
+    const created=fmtTime(p.created_at);
+    const updated=fmtTime(p.updated_at);
+    const isUpdated=updated&&updated!==created;
+    const daysSince=updated?Math.floor((now-new Date(updated))/86400000):999;
+    const isRecent=daysSince<=3;
+    return '<div class="portfolio-item">'+
     '<h3>'+escapeHtml(p.title)+'</h3>'+
     '<div class="desc">'+escapeHtml(p.description)+'</div>'+
     (p.tech_stack&&p.tech_stack.length?'<div class="tech">'+p.tech_stack.map(t=>'<span>'+escapeHtml(t)+'</span>').join('')+'</div>':'')+
     '<div class="links">'+
     (p.url?'<a href="'+escapeHtml(p.url)+'" target="_blank">🔗 访问</a>':'')+
     (p.repo_url?'<a href="'+escapeHtml(p.repo_url)+'" class="secondary" target="_blank">📦 源码</a>':'')+
-    '</div></div>'
-  ).join('');
+    '</div>'+
+    '<div class="meta">'+
+    '<span>📅 创建: '+created+'</span>'+
+    (isUpdated?'<span class="updated">🔄 更新: '+updated+'</span>':'')+
+    (isRecent?'<span class="badge-new">最近更新</span>':'')+
+    '</div></div>';
+  }).join('');
 }
 
 // ── 访问统计 + 心跳 ────────────────────────
