@@ -88,7 +88,9 @@ impl Store {
         let notes = self.notes.lock().unwrap();
         let parts: Vec<String> = notes.iter().map(|n| n.to_json()).collect();
         let json = format!("[{}]", parts.join(",\n"));
-        let _ = fs::write(self.notes_path(), json);
+        if let Err(e) = fs::write(self.notes_path(), &json) {
+            eprintln!("⚠️ 保存 notes.json 失败: {} (路径: {:?})", e, self.notes_path());
+        }
     }
 
     // ── Guestbook 文件 I/O ──────────────────────────
@@ -143,7 +145,9 @@ impl Store {
             })
             .collect();
         let json = format!("[{}]", parts.join(",\n"));
-        let _ = fs::write(self.guestbook_path(), json);
+        if let Err(e) = fs::write(self.guestbook_path(), &json) {
+            eprintln!("⚠️ 保存 guestbook.json 失败: {} (路径: {:?})", e, self.guestbook_path());
+        }
     }
 
     // ── Portfolio 文件 I/O ──────────────────────────
@@ -184,7 +188,9 @@ impl Store {
         let pf = self.portfolio.lock().unwrap();
         let parts: Vec<String> = pf.iter().map(|p| p.to_json()).collect();
         let json = format!("[{}]", parts.join(",\n"));
-        let _ = fs::write(self.portfolio_path(), json);
+        if let Err(e) = fs::write(self.portfolio_path(), &json) {
+            eprintln!("⚠️ 保存 portfolio.json 失败: {} (路径: {:?})", e, self.portfolio_path());
+        }
     }
 
     // ── Visits 文件 I/O ─────────────────────────────
@@ -218,7 +224,9 @@ impl Store {
     pub(crate) fn save_visits(&self) {
         let tv = *self.total_visits.lock().unwrap();
         let json = format!(r#"{{"total_visits":{}}}"#, tv);
-        let _ = fs::write(self.visits_path(), json);
+        if let Err(e) = fs::write(self.visits_path(), &json) {
+            eprintln!("⚠️ 保存 visits.json 失败: {} (路径: {:?})", e, self.visits_path());
+        }
     }
 
     pub fn record_visit(&self, ip: &str) {

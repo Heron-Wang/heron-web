@@ -584,6 +584,10 @@ async function loadNotes(noteId){
 }
 
 async function loadNotesList(){
+  hideToc();
+  window.onscroll=null;
+  const rp=document.getElementById('readProgress');
+  if(rp)rp.style.width='0';
   let url='/api/notes?limit='+pageSize+'&offset='+((currentPage-1)*pageSize)+'&sort='+currentSort;
   if(currentTag)url+='&tag='+encodeURIComponent(currentTag);
   if(searchQuery)url+='&q='+encodeURIComponent(searchQuery);
