@@ -719,7 +719,7 @@ async function importNote(event){
   const titleMatch=text.match(/^#\s+(.+)/m);
   const title=titleMatch?titleMatch[1]:file.name.replace(/\.md$/,'');
   const content=text.replace(/^#\s+.+\n*/m,'');
-  const r=await fetch('/api/notes',{method:'POST',headers:{'Content-Type':'application/json','X-API-Token':'hermes-a3f7b2e9c1d4'},body:JSON.stringify({title,content,tags:['导入'],category:'经验总结'})});
+  const r=await fetch('/api/notes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title,content,tags:['导入'],category:'经验总结'})});
   if(r.ok){toast('导入成功');loadNotesList();}else{toast('导入失败');}
 }
 
