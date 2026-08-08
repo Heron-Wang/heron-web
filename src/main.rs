@@ -16,8 +16,15 @@ use store::{Store, JsonParser, JsonValue};
 
 const HOST: &str = "0.0.0.0";
 const PORT: u16 = 8080;
-const API_TOKEN: &str = "hermes-a3f7b2e9c1d4";
 const DATA_DIR: &str = "data";
+
+/// 从环境变量读取 API Token，避免硬编码泄露到源码
+fn get_api_token() -> String {
+    std::env::var("API_TOKEN").unwrap_or_else(|_| {
+        eprintln!("⚠️  警告: 未设置 API_TOKEN 环境变量，管理接口将不可用");
+        String::new()
+    })
+}
 
 // ── 前端 HTML（编译时 include）────────────────────────
 
@@ -421,7 +428,9 @@ impl Request {
     }
 
     fn check_token(&self) -> bool {
-        self.get_header("X-API-Token").unwrap_or("") == API_TOKEN
+        let token = get_api_token();
+        if token.is_empty() { return false; }
+        self.get_header("X-API-Token").unwrap_or("") == token
     }
 }
 
@@ -1240,7 +1249,7 @@ fn main() {
     println!("🌐 主站已启动 (Rust): http://localhost:{}", PORT);
     println!("   监听: {}", addr);
     println!("   外网: https://heronwang.cn");
-    println!("   API Token: {}", API_TOKEN);
+    println!("   API Token: 读取自环境变量 API_TOKEN");
     println!("{}", "-".repeat(50));
 
     // 多线程处理并发
