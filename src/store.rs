@@ -376,6 +376,7 @@ pub struct Note {
     pub category: String,
     pub source: String,
     pub sanitized: i64,
+    pub view_count: i64,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -408,7 +409,7 @@ pub struct PortfolioItem {
 impl Note {
     pub fn to_json(&self) -> String {
         format!(
-            r#"{{"id":{},"title":"{}","content":"{}","tags":{},"category":"{}","source":"{}","sanitized":{},"created_at":"{}","updated_at":"{}"}}"#,
+            r#"{{"id":{},"title":"{}","content":"{}","tags":{},"category":"{}","source":"{}","sanitized":{},"view_count":{},"created_at":"{}","updated_at":"{}"}}"#,
             self.id,
             json_escape(&self.title),
             json_escape(&self.content),
@@ -416,8 +417,19 @@ impl Note {
             json_escape(&self.category),
             json_escape(&self.source),
             self.sanitized,
+            self.view_count,
             json_escape(&self.created_at),
             json_escape(&self.updated_at),
+        )
+    }
+
+    /// 精简 JSON（用于相关推荐等场景，只含 id/title/tags）
+    pub fn to_json_compact(&self) -> String {
+        format!(
+            r#"{{"id":{},"title":"{}","tags":{}}}"#,
+            self.id,
+            json_escape(&self.title),
+            json_string_array(&self.tags),
         )
     }
 
@@ -434,6 +446,7 @@ impl Note {
             category: obj.get("category")?.as_str().unwrap_or("经验总结").to_string(),
             source: obj.get("source")?.as_str().unwrap_or("hermes").to_string(),
             sanitized: obj.get("sanitized")?.as_number().unwrap_or(1.0) as i64,
+            view_count: obj.get("view_count").and_then(|v| v.as_number()).unwrap_or(0.0) as i64,
             created_at: obj.get("created_at")?.as_str().unwrap_or("").to_string(),
             updated_at: obj.get("updated_at")?.as_str().unwrap_or("").to_string(),
         })
@@ -611,6 +624,7 @@ impl Store {
             category: category.to_string(),
             source: source.to_string(),
             sanitized,
+            view_count: 0,
             created_at: now.clone(),
             updated_at: now,
         });
@@ -669,6 +683,221 @@ impl Store {
         }
         tags.sort();
         tags
+    }
+
+    // ── Notes: 搜索 / 分页 / 排序 / 导航 / 推荐 ────────
+
+    /// 搜索笔记（title + content，不区分大小写），同时支持 tag/category 过滤。
+    pub fn search_notes(
+        &self,
+        q: &str,
+        limit: usize,
+        offset: usize,
+        tag: Option<&str>,
+        category: Option<&str>,
+    ) -> Vec<Note> {
+        let notes = self.notes.lock().unwrap();
+        let q_lower = q.to_lowercase();
+        let mut result: Vec<Note> = Vec::new();
+        for n in notes.iter().rev() {
+            if let Some(cat) = category {
+                if n.category != cat {
+                    continue;
+                }
+            }
+            if let Some(t) = tag {
+                if !n.tags.iter().any(|nt| nt == t) {
+                    continue;
+                }
+            }
+            if !q_lower.is_empty() {
+                let title_ok = n.title.to_lowercase().contains(&q_lower);
+                let content_ok = n.content.to_lowercase().contains(&q_lower);
+                if !title_ok && !content_ok {
+                    continue;
+                }
+            }
+            result.push(n.clone());
+        }
+        result.into_iter().skip(offset).take(limit).collect()
+    }
+
+    /// 返回 笔记列表（带排序）。sort: "time" | "title" | "views"
+    pub fn get_notes_sorted(
+        &self,
+        limit: usize,
+        offset: usize,
+        tag: Option<&str>,
+        category: Option<&str>,
+        sort: &str,
+    ) -> Vec<Note> {
+        let notes = self.notes.lock().unwrap();
+        let mut result: Vec<Note> = Vec::new();
+        for n in notes.iter() {
+            if let Some(cat) = category {
+                if n.category != cat {
+                    continue;
+                }
+            }
+            if let Some(t) = tag {
+                if !n.tags.iter().any(|nt| nt == t) {
+                    continue;
+                }
+            }
+            result.push(n.clone());
+        }
+        match sort {
+            "title" => {
+                // 标题字母序 ASC（不区分大小写）
+                result.sort_by(|a, b| a.title.to_lowercase().cmp(&b.title.to_lowercase()));
+            }
+            "views" => {
+                // 阅读次数降序，相同则按 id 降序
+                result.sort_by(|a, b| {
+                    match b.view_count.cmp(&a.view_count) {
+                        std::cmp::Ordering::Equal => b.id.cmp(&a.id),
+                        other => other,
+                    }
+                });
+            }
+            _ => {
+                // time（默认）：按 id 降序（即创建顺序倒序）
+                result.sort_by(|a, b| b.id.cmp(&a.id));
+            }
+        }
+        result.into_iter().skip(offset).take(limit).collect()
+    }
+
+    /// 统计 笔记总数（带 tag/category 过滤）
+    pub fn count_notes(&self, tag: Option<&str>, category: Option<&str>) -> usize {
+        let notes = self.notes.lock().unwrap();
+        notes
+            .iter()
+            .filter(|n| {
+                if let Some(cat) = category {
+                    if n.category != cat {
+                        return false;
+                    }
+                }
+                if let Some(t) = tag {
+                    if !n.tags.iter().any(|nt| nt == t) {
+                        return false;
+                    }
+                }
+                true
+            })
+            .count()
+    }
+
+    /// 阅读次数 +1
+    pub fn increment_view(&self, id: i64) -> bool {
+        let mut notes = self.notes.lock().unwrap();
+        for n in notes.iter_mut() {
+            if n.id == id {
+                n.view_count += 1;
+                drop(notes);
+                self.save_notes();
+                return true;
+            }
+        }
+        false
+    }
+
+    /// 上一篇笔记（id 小于当前的最大 id）
+    pub fn get_prev_note(&self, id: i64) -> Option<Note> {
+        let notes = self.notes.lock().unwrap();
+        notes
+            .iter()
+            .filter(|n| n.id < id)
+            .max_by_key(|n| n.id)
+            .cloned()
+    }
+
+    /// 下一篇笔记（id 大于当前的最小 id）
+    pub fn get_next_note(&self, id: i64) -> Option<Note> {
+        let notes = self.notes.lock().unwrap();
+        notes
+            .iter()
+            .filter(|n| n.id > id)
+            .min_by_key(|n| n.id)
+            .cloned()
+    }
+
+    /// 相关推荐：同标签的其他笔记（最多 5 条），无则同 category
+    pub fn get_related_notes(&self, id: i64, max: usize) -> Vec<Note> {
+        let notes = self.notes.lock().unwrap();
+        let current = match notes.iter().find(|n| n.id == id) {
+            Some(n) => n.clone(),
+            None => return Vec::new(),
+        };
+
+        // 1. 同标签的其他笔记
+        let mut related: Vec<Note> = notes
+            .iter()
+            .filter(|n| {
+                n.id != id && n.tags.iter().any(|t| current.tags.contains(t))
+            })
+            .cloned()
+            .collect();
+
+        // 如果同标签不足，补充同 category 的
+        if related.len() < max {
+            for n in notes.iter() {
+                if related.len() >= max {
+                    break;
+                }
+                if n.id != id
+                    && n.category == current.category
+                    && !related.iter().any(|r| r.id == n.id)
+                {
+                    related.push(n.clone());
+                }
+            }
+        }
+
+        related.truncate(max);
+        // 按 id 降序
+        related.sort_by(|a, b| b.id.cmp(&a.id));
+        related
+    }
+
+    /// 导出所有笔记（含全文，按 id 升序）
+    pub fn get_all_notes_export(&self) -> Vec<Note> {
+        let notes = self.notes.lock().unwrap();
+        let mut result: Vec<Note> = notes.clone();
+        result.sort_by(|a, b| a.id.cmp(&b.id));
+        result
+    }
+
+    /// 批量导入笔记（返回创建的 id 列表）
+    pub fn import_notes(&self, items: &[(String, String, Vec<String>, String)]) -> Vec<i64> {
+        let mut notes = self.notes.lock().unwrap();
+        let mut next_id = notes.iter().map(|n| n.id).max().unwrap_or(0) + 1;
+        let now = now_iso();
+        let mut ids = Vec::new();
+        for (title, content, tags, category) in items {
+            notes.push(Note {
+                id: next_id,
+                title: title.clone(),
+                content: content.clone(),
+                tags: tags.clone(),
+                category: if category.is_empty() {
+                    "经验总结".to_string()
+                } else {
+                    category.clone()
+                },
+                source: "import".to_string(),
+                sanitized: 1,
+                view_count: 0,
+                created_at: now.clone(),
+                updated_at: now.clone(),
+            });
+            ids.push(next_id);
+            next_id += 1;
+        }
+        drop(notes);
+        self.save_notes();
+        ids
     }
 
     // ── Guestbook ─────────────────────────

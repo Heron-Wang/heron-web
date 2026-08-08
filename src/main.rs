@@ -709,7 +709,7 @@ fn handle_get(stream: &mut TcpStream, req: &Request, ip: &str, store: &Arc<Store
         return;
     }
 
-    // 笔记列表
+    // 笔记列表（支持 q 搜索、limit/offset 分页、tag/category 过滤、sort 排序）
     if path == "/api/notes" {
         let limit: usize = req
             .query_param("limit")
@@ -721,10 +721,50 @@ fn handle_get(stream: &mut TcpStream, req: &Request, ip: &str, store: &Arc<Store
             .unwrap_or(0);
         let tag = req.query_param("tag");
         let category = req.query_param("category");
+        let q_raw = req.query_param("q").unwrap_or_default();
+        let q = url_decode(q_raw.trim());
+        let sort = req.query_param("sort").unwrap_or_default();
         let tag_ref = tag.as_deref();
         let cat_ref = category.as_deref();
 
-        let notes = store.get_notes(limit, offset, tag_ref, cat_ref);
+        // 有搜索关键词时走搜索路径
+        if !q.is_empty() {
+            let notes = store.search_notes(&q, limit, offset, tag_ref, cat_ref);
+            let parts: Vec<String> = notes.iter().map(|n| n.to_json()).collect();
+            send_json(
+                stream,
+                &format!("[{}]", parts.join(",")),
+                200,
+                Some("public, max-age=30, s-maxage=60"),
+            );
+            return;
+        }
+
+        // 无搜索：带排序的列表 + 分页元信息
+        let sort_str = if sort.is_empty() { "time" } else { sort.as_str() };
+        let notes = store.get_notes_sorted(limit, offset, tag_ref, cat_ref, sort_str);
+        let total = store.count_notes(tag_ref, cat_ref);
+        let pages = if limit == 0 { 1 } else { (total + limit - 1) / limit };
+        let page = if limit == 0 { 1 } else { (offset / limit) + 1 };
+        let parts: Vec<String> = notes.iter().map(|n| n.to_json()).collect();
+        send_json(
+            stream,
+            &format!(
+                r#"{{"data":[{}],"total":{},"page":{},"pages":{}}}"#,
+                parts.join(","),
+                total,
+                page,
+                pages
+            ),
+            200,
+            Some("public, max-age=60, s-maxage=300"),
+        );
+        return;
+    }
+
+    // 笔记导出（必须在 /api/notes/<id> 之前匹配）
+    if path == "/api/notes/export" {
+        let notes = store.get_all_notes_export();
         let parts: Vec<String> = notes.iter().map(|n| n.to_json()).collect();
         send_json(
             stream,
@@ -735,22 +775,70 @@ fn handle_get(stream: &mut TcpStream, req: &Request, ip: &str, store: &Arc<Store
         return;
     }
 
-    // 笔记详情
+    // 笔记子路径：/api/notes/<id>、/api/notes/<id>/prev|next|related
     if path.starts_with("/api/notes/") {
-        let id_str = &path["/api/notes/".len()..];
-        if let Ok(id) = id_str.parse::<i64>() {
-            if let Some(note) = store.get_note(id) {
-                send_json(
-                    stream,
-                    &note.to_json(),
-                    200,
-                    Some("public, max-age=120, s-maxage=600"),
-                );
-            } else {
-                send_json(stream, r#"{"error":"not found"}"#, 404, Some("no-cache"));
+        let rest = &path["/api/notes/".len()..];
+        // 可能是 "123" 或 "123/prev" 等
+        let (id_part, sub) = match rest.find('/') {
+            Some(pos) => (&rest[..pos], &rest[pos + 1..]),
+            None => (rest, ""),
+        };
+        if let Ok(id) = id_part.parse::<i64>() {
+            match sub {
+                "" => {
+                    // 笔记详情
+                    if let Some(note) = store.get_note(id) {
+                        send_json(
+                            stream,
+                            &note.to_json(),
+                            200,
+                            Some("public, max-age=120, s-maxage=600"),
+                        );
+                    } else {
+                        send_json(stream, r#"{"error":"not found"}"#, 404, Some("no-cache"));
+                    }
+                    return;
+                }
+                "prev" => {
+                    if let Some(note) = store.get_prev_note(id) {
+                        send_json(stream, &note.to_json(), 200, Some("no-cache"));
+                    } else {
+                        send_json(stream, "null", 200, Some("no-cache"));
+                    }
+                    return;
+                }
+                "next" => {
+                    if let Some(note) = store.get_next_note(id) {
+                        send_json(stream, &note.to_json(), 200, Some("no-cache"));
+                    } else {
+                        send_json(stream, "null", 200, Some("no-cache"));
+                    }
+                    return;
+                }
+                "related" => {
+                    let related = store.get_related_notes(id, 5);
+                    let parts: Vec<String> = related.iter().map(|n| n.to_json_compact()).collect();
+                    send_json(
+                        stream,
+                        &format!("[{}]", parts.join(",")),
+                        200,
+                        Some("public, max-age=120, s-maxage=600"),
+                    );
+                    return;
+                }
+                _ => {
+                    send_json(stream, r#"{"error":"not found"}"#, 404, Some("no-cache"));
+                    return;
+                }
             }
-            return;
         }
+    }
+
+    // RSS 订阅
+    if path == "/rss.xml" {
+        let xml = build_rss_xml(store);
+        send_text(stream, &xml, 200, "application/rss+xml; charset=utf-8");
+        return;
     }
 
     // 留言列表
@@ -800,6 +888,32 @@ fn handle_get(stream: &mut TcpStream, req: &Request, ip: &str, store: &Arc<Store
 fn handle_post(stream: &mut TcpStream, req: &Request, ip: &str, store: &Arc<Store>) {
     let path = req.path.as_str();
 
+    // 笔记导入（批量）— 需要 Token
+    if path == "/api/notes/import" {
+        if !req.check_token() {
+            send_json(stream, r#"{"error":"unauthorized"}"#, 401, Some("no-cache"));
+            return;
+        }
+        match handle_import_notes(req, store) {
+            Ok(result) => send_json(stream, &result, 200, Some("no-cache")),
+            Err(e) => send_json(stream, &format!(r#"{{"error":"{}"}}"#, store::json_escape(&e)), 400, Some("no-cache")),
+        }
+        return;
+    }
+
+    // 笔记阅读次数 +1 — POST /api/notes/<id>/view
+    if path.starts_with("/api/notes/") && path.ends_with("/view") {
+        let rest = &path["/api/notes/".len()..path.len() - "/view".len()];
+        if let Ok(id) = rest.parse::<i64>() {
+            if store.increment_view(id) {
+                send_json(stream, r#"{"ok":true}"#, 200, Some("no-cache"));
+            } else {
+                send_json(stream, r#"{"error":"not found"}"#, 404, Some("no-cache"));
+            }
+            return;
+        }
+    }
+
     // 创建笔记
     if path == "/api/notes" {
         if !req.check_token() {
@@ -846,13 +960,16 @@ fn handle_delete(stream: &mut TcpStream, req: &Request, store: &Arc<Store>) {
         return;
     }
 
-    // 删除笔记
+    // 删除笔记（仅匹配纯数字 id，不匹配子路径如 /123/view）
     if path.starts_with("/api/notes/") {
         let id_str = &path["/api/notes/".len()..];
-        if let Ok(id) = id_str.parse::<i64>() {
-            store.delete_note(id);
-            send_json(stream, r#"{"status":"deleted"}"#, 200, Some("no-cache"));
-            return;
+        // 确保是纯 id（无子路径）
+        if !id_str.contains('/') {
+            if let Ok(id) = id_str.parse::<i64>() {
+                store.delete_note(id);
+                send_json(stream, r#"{"status":"deleted"}"#, 200, Some("no-cache"));
+                return;
+            }
         }
     }
 
@@ -980,6 +1097,128 @@ fn handle_create_portfolio(req: &Request, store: &Arc<Store>) -> Result<String, 
 
     let pid = store.create_portfolio(title, description, url, repo_url, tech_stack, sort_order);
     Ok(format!(r#"{{"id":{},"status":"created"}}"#, pid))
+}
+
+// ── RSS / 导入 辅助函数 ──────────────────────────────
+
+/// 构建 RSS 2.0 XML（最近 20 条笔记）
+fn build_rss_xml(store: &Arc<Store>) -> String {
+    let notes = store.get_notes_sorted(20, 0, None, None, "time");
+    let mut items: Vec<String> = Vec::new();
+    for n in &notes {
+        let link = format!("https://heronwang.cn/#/note/{}", n.id);
+        // 描述取 content 前 200 字符
+        let desc: String = n.content.chars().take(200).collect();
+        items.push(format!(
+            r#"    <item>
+      <title>{}</title>
+      <link>{}</link>
+      <description>{}</description>
+      <guid isPermaLink="false">note-{}</guid>
+      <pubDate>{}</pubDate>
+    </item>"#,
+            xml_escape(&n.title),
+            xml_escape(&link),
+            xml_escape(&desc),
+            n.id,
+            xml_escape(&n.created_at),
+        ));
+    }
+    format!(
+        r#"<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Heron Wang 的笔记</title>
+    <link>https://heronwang.cn</link>
+    <description>个人笔记与经验总结</description>
+    <language>zh-CN</language>
+{}
+  </channel>
+</rss>"#,
+        items.join("\n")
+    )
+}
+
+/// XML 字符串转义
+fn xml_escape(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    for c in s.chars() {
+        match c {
+            '&' => out.push_str("&amp;"),
+            '<' => out.push_str("&lt;"),
+            '>' => out.push_str("&gt;"),
+            '"' => out.push_str("&quot;"),
+            '\'' => out.push_str("&apos;"),
+            c => out.push(c),
+        }
+    }
+    out
+}
+
+/// 批量导入笔记
+/// 接收格式: [{"title","content","tags","category"}, ...] 或 {"notes":[...]}
+fn handle_import_notes(req: &Request, store: &Arc<Store>) -> Result<String, String> {
+    if req.body.is_empty() {
+        return Err("empty body".to_string());
+    }
+
+    let parsed = JsonParser::parse(&req.body).map_err(|e| format!("invalid JSON: {}", e))?;
+
+    // 支持数组或 {notes:[...]} 两种格式
+    let arr = match &parsed {
+        JsonValue::Array(_) => &parsed,
+        JsonValue::Object(_) => {
+            match parsed.get("notes") {
+                Some(v) if v.as_array().is_some() => v,
+                _ => return Err("expected array or {notes: [...]}".to_string()),
+            }
+        }
+        _ => return Err("expected array or {notes: [...]}".to_string()),
+    };
+
+    let items_arr = match arr.as_array() {
+        Some(a) => a,
+        None => return Err("invalid notes array".to_string()),
+    };
+
+    let mut items: Vec<(String, String, Vec<String>, String)> = Vec::new();
+    for v in items_arr {
+        let title = v.get("title").and_then(|x| x.as_str()).unwrap_or("");
+        let content = v.get("content").and_then(|x| x.as_str()).unwrap_or("");
+        let category = v
+            .get("category")
+            .and_then(|x| x.as_str())
+            .unwrap_or("经验总结");
+
+        let tags = match v.get("tags") {
+            Some(JsonValue::Array(ta)) => ta
+                .iter()
+                .filter_map(|x| x.as_str().map(|s| s.to_string()))
+                .collect(),
+            _ => Vec::new(),
+        };
+
+        if title.is_empty() && content.is_empty() {
+            continue; // 跳过空条目
+        }
+
+        // 导入时也做脱敏
+        let (san_title, _) = sanitize_count(title);
+        let (san_content, _) = sanitize_count(content);
+        items.push((san_title, san_content, tags, category.to_string()));
+    }
+
+    if items.is_empty() {
+        return Err("no valid notes to import".to_string());
+    }
+
+    let count = items.len();
+    let ids = store.import_notes(&items);
+    Ok(format!(
+        r#"{{"status":"imported","count":{},"ids":[{}]}}"#,
+        count,
+        ids.iter().map(|i| i.to_string()).collect::<Vec<_>>().join(",")
+    ))
 }
 
 // ── 主函数 ──────────────────────────────────────────

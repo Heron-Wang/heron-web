@@ -2,31 +2,47 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="description" content="Heron Wang 的个人技术空间 - 笔记、作品、分享">
 <title>Heron Wang · 个人空间</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-:root{--bg1:#0f0f23;--bg2:#1a1a3e;--bg3:#2d1b4e;--cyan:#00f5d4;--blue:#00bbf9;--purple:#9b5de5;--pink:#f15bb5;--text:#e0e0e0;--muted:#888;--card:rgba(255,255,255,0.05);--border:rgba(255,255,255,0.1)}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,var(--bg1) 0%,var(--bg2) 50%,var(--bg3) 100%);color:var(--text);min-height:100vh}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--bg1:#0f0f23;--bg2:#1a1a3e;--bg3:#2d1b4e;--cyan:#00f5d4;--blue:#00bbf9;--purple:#9b5de5;--pink:#f15bb5;--green:#5ce8a0;--yellow:#fee440;--red:#ee5253;--orange:#ff9f1c;--text:#e0e0e0;--muted:#888;--card:rgba(255,255,255,0.05);--border:rgba(255,255,255,0.1)}
+html{overflow-x:hidden;scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,var(--bg1) 0%,var(--bg2) 50%,var(--bg3) 100%);color:var(--text);min-height:100vh;overflow-x:hidden}
 a{color:var(--cyan);text-decoration:none}
 a:hover{text-decoration:underline}
 
-/* nav */
-nav{position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);background:rgba(15,15,35,0.8);border-bottom:1px solid var(--border);padding:0.8rem 2rem}
-nav .inner{max-width:900px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
-nav .logo{font-size:1.3rem;font-weight:bold;background:linear-gradient(90deg,var(--cyan),var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-nav .links{display:flex;gap:1.5rem}
+/* ── 亮色主题 ── */
+body.light{--bg1:#f5f5f5;--bg2:#e8e8e8;--bg3:#ddd;--text:#222;--muted:#666;--card:rgba(0,0,0,0.03);--border:rgba(0,0,0,0.1)}
+body.light nav{background:rgba(255,255,255,0.85)}
+body.light .md-pre{background:rgba(0,0,0,0.05)}
+body.light .md-code{background:rgba(0,0,0,0.06)}
+
+/* ── 导航 ── */
+nav{position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);background:rgba(15,15,35,0.8);border-bottom:1px solid var(--border);padding:0.8rem 1.5rem}
+nav .inner{max-width:900px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+nav .logo{font-size:1.3rem;font-weight:bold;background:linear-gradient(90deg,var(--cyan),var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;cursor:pointer;white-space:nowrap}
+nav .search-box{flex:1;max-width:300px;position:relative}
+nav .search-box input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:0.5rem 1rem 0.5rem 2rem;color:var(--text);font-size:0.9rem;font-family:inherit;min-height:36px}
+nav .search-box input:focus{outline:none;border-color:var(--cyan)}
+nav .search-box .search-icon{position:absolute;left:0.7rem;top:50%;transform:translateY(-50%);color:var(--muted);font-size:0.9rem}
+nav .links{display:flex;gap:1.5rem;align-items:center}
 nav .links a{color:var(--text);font-size:0.95rem;cursor:pointer;transition:color .2s}
 nav .links a:hover{color:var(--cyan);text-decoration:none}
 nav .links a.active{color:var(--cyan)}
+nav .theme-btn{cursor:pointer;font-size:1.2rem;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--text)}
 
-/* layout */
+/* ── 汉堡菜单 ── */
+.hamburger{display:none;cursor:pointer;font-size:1.4rem;min-width:44px;min-height:44px;display:none;align-items:center;justify-content:center}
+
+/* ── 布局 ── */
 .container{max-width:900px;margin:0 auto;padding:2rem 1.5rem 4rem}
 .page{display:none;animation:fade .3s ease}
 .page.active{display:block}
 @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-/* home */
+/* ── 首页 ── */
 .hero{text-align:center;padding:3rem 0 2rem}
 .hero h1{font-size:2.8rem;margin-bottom:0.5rem;background:linear-gradient(90deg,var(--cyan),var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .hero p{color:var(--muted);font-size:1.1rem}
@@ -43,9 +59,13 @@ nav .links a.active{color:var(--cyan)}
 .stat-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite;display:inline-block}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
 
-/* notes */
-.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+/* ── 笔记 ── */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:0.5rem}
 .section-header h2{font-size:1.8rem;color:var(--cyan)}
+.section-header .actions{display:flex;gap:0.5rem;align-items:center}
+.section-header .actions a,.section-header .actions button{font-size:0.8rem;padding:0.35rem 0.8rem;border-radius:8px;background:var(--card);border:1px solid var(--border);color:var(--muted);cursor:pointer;text-decoration:none;transition:all .2s;min-height:32px;display:flex;align-items:center}
+.section-header .actions a:hover,.section-header .actions button:hover{border-color:var(--cyan);color:var(--cyan)}
+.sort-select{font-size:0.8rem;padding:0.3rem 0.6rem;border-radius:8px;background:var(--card);border:1px solid var(--border);color:var(--text);cursor:pointer;font-family:inherit}
 .tag-filter{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem}
 .tag{padding:0.3rem 0.9rem;border-radius:20px;font-size:0.82rem;cursor:pointer;background:var(--card);border:1px solid var(--border);color:var(--muted);transition:all .2s}
 .tag:hover,.tag.active{background:rgba(0,245,212,0.15);border-color:rgba(0,245,212,0.4);color:var(--cyan)}
@@ -53,49 +73,106 @@ nav .links a.active{color:var(--cyan)}
 .note-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;cursor:pointer;transition:all .2s}
 .note-item:hover{border-color:rgba(0,245,212,0.25)}
 .note-item h3{font-size:1.1rem;margin-bottom:0.5rem;color:var(--text)}
-.note-item .meta{display:flex;gap:0.8rem;align-items:center;font-size:0.8rem;color:var(--muted);margin-bottom:0.5rem}
+.note-item .meta{display:flex;gap:0.8rem;align-items:center;font-size:0.8rem;color:var(--muted);margin-bottom:0.5rem;flex-wrap:wrap}
 .note-item .meta .cat{color:var(--blue)}
+.note-item .meta .views{color:var(--orange)}
 .note-item .tags{display:flex;gap:0.4rem;flex-wrap:wrap}
 .note-item .tags span{font-size:0.72rem;padding:0.15rem 0.5rem;border-radius:12px;background:rgba(155,93,229,0.15);color:var(--purple)}
 .note-item .preview{color:var(--muted);font-size:0.9rem;line-height:1.6;margin-top:0.5rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.note-detail{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:2rem}
+.note-item .preview mark{background:rgba(254,228,64,0.3);color:var(--yellow);border-radius:2px;padding:0 2px}
+
+/* ── 分页 ── */
+.pagination{display:flex;gap:0.5rem;justify-content:center;margin-top:1.5rem;flex-wrap:wrap}
+.pagination button{min-width:36px;min-height:36px;padding:0.3rem 0.7rem;border-radius:8px;background:var(--card);border:1px solid var(--border);color:var(--text);cursor:pointer;font-size:0.85rem;font-family:inherit}
+.pagination button.active{background:rgba(0,245,212,0.15);border-color:var(--cyan);color:var(--cyan)}
+.pagination button:disabled{opacity:0.3;cursor:not-allowed}
+
+/* ── 笔记详情 ── */
+.note-detail{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:2rem;position:relative}
 .note-detail h2{font-size:1.5rem;margin-bottom:0.5rem;color:var(--cyan)}
-.note-detail .meta{display:flex;gap:0.8rem;font-size:0.85rem;color:var(--muted);margin-bottom:1rem}
+.note-detail .meta{display:flex;gap:0.8rem;font-size:0.85rem;color:var(--muted);margin-bottom:1rem;flex-wrap:wrap}
+.note-detail .meta .views{color:var(--orange)}
 .note-detail .tags{display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:1.5rem}
 .note-detail .tags span{font-size:0.78rem;padding:0.2rem 0.6rem;border-radius:12px;background:rgba(155,93,229,0.15);color:var(--purple)}
 .note-detail pre{background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;padding:1rem;overflow-x:auto;margin:1rem 0;font-size:0.88rem;line-height:1.6}
 .note-detail code{font-family:'Fira Code','Cascadia Code',Consolas,monospace}
 .note-detail p{line-height:1.8;margin-bottom:0.8rem}
 .note-detail .back{color:var(--cyan);cursor:pointer;font-size:0.9rem;margin-bottom:1rem;display:inline-block}
-/* Markdown 渲染样式 */
+.note-detail-content{font-size:var(--reader-font,16px);line-height:1.8}
+.font-ctrl{position:absolute;top:1rem;right:1rem;display:flex;gap:0.3rem}
+.font-ctrl button{width:32px;height:32px;border-radius:8px;background:var(--card);border:1px solid var(--border);color:var(--text);cursor:pointer;font-size:0.9rem}
+
+/* ── 阅读进度条 ── */
+.read-progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--cyan),var(--blue),var(--purple));z-index:200;transition:width .1s;width:0}
+
+/* ── 目录大纲 ── */
+.note-toc{position:fixed;top:80px;right:20px;width:220px;max-height:70vh;overflow-y:auto;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1rem;font-size:0.82rem;z-index:50}
+.note-toc h4{color:var(--cyan);margin-bottom:0.5rem;font-size:0.85rem}
+.note-toc a{display:block;padding:0.2rem 0.5rem;color:var(--muted);text-decoration:none;border-left:2px solid transparent;transition:all .2s;cursor:pointer}
+.note-toc a:hover{color:var(--cyan)}
+.note-toc a.active{color:var(--cyan);border-left-color:var(--cyan);background:rgba(0,245,212,0.05)}
+.note-toc a.sub{padding-left:1.2rem;font-size:0.78rem}
+.toc-mobile-btn{display:none;position:fixed;bottom:80px;right:20px;width:48px;height:48px;border-radius:50%;background:rgba(0,245,212,0.15);border:1px solid var(--cyan);color:var(--cyan);font-size:1.3rem;cursor:pointer;z-index:60;align-items:center;justify-content:center}
+
+/* ── 返回顶部 ── */
+.back-top{position:fixed;bottom:20px;right:20px;width:48px;height:48px;border-radius:50%;background:rgba(0,245,212,0.15);border:1px solid var(--cyan);color:var(--cyan);font-size:1.2rem;cursor:pointer;z-index:60;opacity:0;pointer-events:none;transition:opacity .3s;display:flex;align-items:center;justify-content:center}
+.back-top.show{opacity:1;pointer-events:auto}
+
+/* ── 上一篇/下一篇 ── */
+.prev-next{display:flex;justify-content:space-between;margin-top:1.5rem;gap:1rem;flex-wrap:wrap}
+.prev-next .pn-item{flex:1;min-width:200px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1rem;cursor:pointer;transition:all .2s}
+.prev-next .pn-item:hover{border-color:var(--cyan)}
+.prev-next .pn-label{font-size:0.75rem;color:var(--muted);margin-bottom:0.3rem}
+.prev-next .pn-title{font-size:0.9rem;color:var(--text)}
+.prev-next .pn-item.next{text-align:right}
+
+/* ── 相关推荐 ── */
+.related{margin-top:1.5rem}
+.related h3{font-size:1rem;color:var(--cyan);margin-bottom:0.8rem}
+.related-list{display:flex;gap:0.6rem;flex-wrap:wrap}
+.related-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:0.6rem 1rem;cursor:pointer;transition:all .2s;font-size:0.85rem}
+.related-item:hover{border-color:var(--cyan);color:var(--cyan)}
+
+/* ── Markdown 渲染样式 ── */
 .md-h1{font-size:1.5rem;color:var(--cyan);margin:1.5rem 0 0.8rem;font-weight:bold}
 .md-h2{font-size:1.3rem;color:var(--cyan);margin:1.2rem 0 0.6rem;font-weight:bold}
 .md-h3{font-size:1.1rem;color:var(--cyan);margin:1rem 0 0.5rem;font-weight:bold}
 .md-h4{font-size:1rem;color:var(--text);margin:0.8rem 0 0.4rem;font-weight:bold}
 .md-hr{border:none;border-top:1px solid var(--border);margin:1.5rem 0}
 .md-pre{background:rgba(0,0,0,0.35);border:1px solid var(--border);border-radius:8px;padding:1rem;overflow-x:auto;margin:1rem 0;font-size:0.85rem;line-height:1.6}
-.md-codeblock{font-family:'Fira Code','Cascadia Code',Consolas,monospace;color:var(--green);display:block;white-space:pre}
+.md-codeblock{font-family:'Fira Code','Cascadia Code',Consolas,monospace;display:block;white-space:pre}
 .md-code{background:rgba(0,0,0,0.3);padding:0.15rem 0.4rem;border-radius:4px;font-size:0.85em;font-family:'Fira Code',Consolas,monospace;color:var(--pink)}
 .md-link{color:var(--blue);text-decoration:none;border-bottom:1px dotted var(--blue)}
 .md-link:hover{text-decoration:underline}
-.md-quote{border-left:3px solid var(--purple);padding:0.5rem 1rem;margin:0.8rem 0;background:rgba(155,93,229,0.08);color:var(--text-dim);border-radius:0 8px 8px 0}
+.md-quote{border-left:3px solid var(--purple);padding:0.5rem 1rem;margin:0.8rem 0;background:rgba(155,93,229,0.08);border-radius:0 8px 8px 0}
 .md-ul{margin:0.5rem 0 0.8rem 1.5rem;list-style:disc}
 .md-ol{margin:0.5rem 0 0.8rem 1.5rem;list-style:decimal}
 .md-ul li,.md-ol li{line-height:1.8;margin-bottom:0.2rem}
-.md-table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:0.85rem}
+.md-table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:0.85rem;display:block;overflow-x:auto}
 .md-table th{background:rgba(0,245,212,0.1);border:1px solid var(--border);padding:0.5rem 0.7rem;text-align:left;color:var(--cyan);font-weight:bold}
 .md-table td{border:1px solid var(--border);padding:0.5rem 0.7rem}
 .md-table tr:nth-child(even){background:rgba(255,255,255,0.02)}
+.md-img{max-width:100%;border-radius:8px;margin:0.5rem 0;cursor:zoom-in;display:block}
+.md-task{list-style:none;margin-left:0.5rem}
+.md-task li{display:flex;align-items:flex-start;gap:0.4rem}
+.md-task input{margin-top:0.4rem;accent-color:var(--cyan)}
+/* 代码高亮 */
+.tok-kw{color:#c792ea;font-weight:bold}
+.tok-str{color:var(--green)}
+.tok-num{color:var(--orange)}
+.tok-com{color:#5c6370;font-style:italic}
+.tok-fn{color:var(--blue)}
+.tok-type{color:var(--yellow)}
 .empty{text-align:center;padding:3rem;color:var(--muted)}
 
-/* guestbook */
+/* ── 留言板 ── */
 .guestbook-form{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:2rem}
-.guestbook-form input,.guestbook-form textarea{width:100%;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;padding:0.7rem 1rem;color:var(--text);font-size:0.95rem;font-family:inherit;margin-bottom:0.8rem}
+.guestbook-form input,.guestbook-form textarea{width:100%;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;padding:0.7rem 1rem;color:var(--text);font-size:0.95rem;font-family:inherit;margin-bottom:0.8rem;min-height:44px}
 .guestbook-form input:focus,.guestbook-form textarea:focus{outline:none;border-color:rgba(0,245,212,0.4)}
 .guestbook-form textarea{resize:vertical;min-height:80px}
 .guestbook-form .row{display:flex;gap:0.8rem}
 .guestbook-form .row input{flex:1}
-.btn{padding:0.7rem 1.8rem;background:linear-gradient(90deg,var(--cyan),var(--blue));color:var(--bg1);border:none;border-radius:8px;font-size:0.95rem;font-weight:bold;cursor:pointer;transition:transform .15s}
+.btn{padding:0.7rem 1.8rem;background:linear-gradient(90deg,var(--cyan),var(--blue));color:var(--bg1);border:none;border-radius:8px;font-size:0.95rem;font-weight:bold;cursor:pointer;transition:transform .15s;min-height:44px}
 .btn:hover{transform:scale(1.03)}
 .guest-list{display:flex;flex-direction:column;gap:1rem}
 .guest-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem 1.5rem}
@@ -104,9 +181,9 @@ nav .links a.active{color:var(--cyan)}
 .guest-item .time{color:var(--muted);font-size:0.8rem}
 .guest-item .msg{color:var(--text);line-height:1.6}
 .guest-item .contact{color:var(--muted);font-size:0.8rem;margin-top:0.3rem}
-.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:rgba(30,30,60,0.95);border:1px solid rgba(0,245,212,0.3);border-radius:8px;padding:0.8rem 1.5rem;color:var(--cyan);z-index:200;animation:fade .3s}
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:rgba(30,30,60,0.95);border:1px solid rgba(0,245,212,0.3);border-radius:8px;padding:0.8rem 1.5rem;color:var(--cyan);z-index:300;animation:fade .3s}
 
-/* portfolio */
+/* ── 作品集 ── */
 .portfolio-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem}
 .portfolio-item{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.8rem;transition:all .25s}
 .portfolio-item:hover{border-color:rgba(0,245,212,0.25);transform:translateY(-4px);box-shadow:0 8px 32px rgba(0,245,212,0.1)}
@@ -115,26 +192,78 @@ nav .links a.active{color:var(--cyan)}
 .portfolio-item .tech{display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:1rem}
 .portfolio-item .tech span{font-size:0.75rem;padding:0.2rem 0.6rem;border-radius:10px;background:rgba(0,187,249,0.15);color:var(--blue)}
 .portfolio-item .links{display:flex;gap:0.8rem}
-.portfolio-item .links a{font-size:0.85rem;padding:0.4rem 1rem;border-radius:8px;background:rgba(0,245,212,0.1);border:1px solid rgba(0,245,212,0.3);color:var(--cyan);text-decoration:none;transition:all .2s}
+.portfolio-item .links a{font-size:0.85rem;padding:0.4rem 1rem;border-radius:8px;background:rgba(0,245,212,0.1);border:1px solid rgba(0,245,212,0.3);color:var(--cyan);text-decoration:none;transition:all .2s;min-height:36px;display:flex;align-items:center}
 .portfolio-item .links a:hover{background:rgba(0,245,212,0.2)}
 .portfolio-item .links a.secondary{background:rgba(155,93,229,0.1);border-color:rgba(155,93,229,0.3);color:var(--purple)}
 
+/* ── 图片灯箱 ── */
+.lightbox{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;padding:2rem}
+.lightbox img{max-width:95%;max-height:95%;border-radius:8px}
+
+/* ── 移动端汉堡菜单展开 ── */
+.mobile-menu{display:none;position:fixed;top:60px;left:0;right:0;background:rgba(15,15,35,0.95);border-bottom:1px solid var(--border);padding:1rem;z-index:99;flex-direction:column;gap:0.5rem}
+.mobile-menu.open{display:flex}
+.mobile-menu a{padding:0.8rem 1rem;color:var(--text);font-size:1rem;cursor:pointer;min-height:44px;display:flex;align-items:center}
+.mobile-menu a:hover{color:var(--cyan)}
+.mobile-menu .search-box{position:relative;margin-bottom:0.5rem}
+.mobile-menu .search-box input{width:100%;padding:0.6rem 1rem 0.6rem 2rem;border-radius:20px;background:var(--card);border:1px solid var(--border);color:var(--text);font-size:0.9rem;min-height:44px}
+
 footer{text-align:center;padding:2rem;color:var(--muted);font-size:0.82rem;border-top:1px solid var(--border);margin-top:3rem}
-@media(max-width:600px){.hero h1{font-size:2rem}.cards{grid-template-columns:1fr}nav .links{gap:1rem}}
+
+/* ── 移动端响应式 ── */
+@media(max-width:768px){
+  nav .inner{flex-wrap:wrap}
+  nav .search-box{order:3;width:100%;max-width:100%;margin-top:0.5rem}
+  .hamburger{display:flex}
+  nav .links{display:none}
+  .hero h1{font-size:2rem}
+  .cards{grid-template-columns:1fr}
+  .container{padding:1rem 0.8rem 4rem}
+  .note-detail{padding:1.2rem}
+  .note-toc{display:none}
+  .toc-mobile-btn{display:flex}
+  .font-ctrl{top:0.5rem;right:0.5rem}
+  .prev-next .pn-item{min-width:100%}
+  .md-table{font-size:0.75rem}
+  .md-pre{font-size:0.78rem;padding:0.6rem}
+  .note-detail-content{font-size:var(--reader-font,16px)!important}
+  .section-header h2{font-size:1.4rem}
+}
 </style>
 </head>
 <body>
+
+<div class="read-progress" id="readProgress"></div>
+
 <nav>
 <div class="inner">
 <span class="logo" onclick="go('home')">Heron Wang</span>
+<div class="search-box">
+<span class="search-icon">🔍</span>
+<input id="searchInput" placeholder="搜索笔记..." oninput="onSearch()">
+</div>
+<span class="hamburger" onclick="toggleMobileMenu()">☰</span>
 <div class="links">
 <a data-page="home" onclick="go('home')">首页</a>
 <a data-page="notes" onclick="go('notes')">笔记</a>
 <a data-page="guestbook" onclick="go('guestbook')">留言</a>
 <a data-page="portfolio" onclick="go('portfolio')">作品集</a>
+<span class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙</span>
 </div>
 </div>
 </nav>
+
+<div class="mobile-menu" id="mobileMenu">
+<div class="search-box">
+<span class="search-icon">🔍</span>
+<input id="searchInputMobile" placeholder="搜索笔记..." oninput="onSearch()">
+</div>
+<a onclick="go('home');closeMobileMenu()">首页</a>
+<a onclick="go('notes');closeMobileMenu()">笔记</a>
+<a onclick="go('guestbook');closeMobileMenu()">留言</a>
+<a onclick="go('portfolio');closeMobileMenu()">作品集</a>
+<a onclick="toggleTheme();closeMobileMenu()" id="themeBtnMobile">🌙 切换主题</a>
+</div>
 
 <div class="container">
 
@@ -145,8 +274,8 @@ footer{text-align:center;padding:2rem;color:var(--muted);font-size:0.82rem;borde
 <h1>Heron Wang</h1>
 <p>技术探索 · 踩坑记录 · 作品分享</p>
 <div class="stats-row" id="statsRow">
-  <span class="stat-item"><span class="stat-dot"></span>在线 <b id="statOnline">-</b></span>
-  <span class="stat-item">累计访问 <b id="statVisits">-</b></span>
+<span class="stat-item"><span class="stat-dot"></span>在线 <b id="statOnline">-</b></span>
+<span class="stat-item">累计访问 <b id="statVisits">-</b></span>
 </div>
 </div>
 <div class="cards">
@@ -170,7 +299,19 @@ footer{text-align:center;padding:2rem;color:var(--muted);font-size:0.82rem;borde
 
 <!-- 笔记 -->
 <div class="page" id="page-notes">
-<div class="section-header"><h2>📝 技术笔记</h2></div>
+<div class="section-header">
+<h2>📝 技术笔记</h2>
+<div class="actions">
+<a href="/rss.xml" target="_blank" title="RSS 订阅">📡 RSS</a>
+<button onclick="exportNotes()" title="导出全部">⬇️ 导出</button>
+<label class="sort-select" style="cursor:pointer">📁 导入<input type="file" id="importFile" accept=".md" style="display:none;width:0" onchange="importNote(event)"></label>
+<select class="sort-select" id="sortSelect" onchange="onSortChange()">
+<option value="time">最新</option>
+<option value="title">标题</option>
+<option value="views">热门</option>
+</select>
+</div>
+</div>
 <div class="tag-filter" id="tagFilter"></div>
 <div id="notesContent">
 <div class="note-list" id="noteList"></div>
@@ -199,43 +340,86 @@ footer{text-align:center;padding:2rem;color:var(--muted);font-size:0.82rem;borde
 
 </div>
 
-<footer>Powered by Python 3 · Cloudflare Tunnel · heronwang.cn</footer>
+<footer>Powered by Rust · Cloudflare Tunnel · heronwang.cn</footer>
+
+<!-- 返回顶部 -->
+<div class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</div>
+<!-- 目录浮动按钮（移动端） -->
+<div class="toc-mobile-btn" id="tocBtn" onclick="toggleTocMobile()" style="display:none">📖</div>
 
 <script>
 // ── 路由 ──────────────────────────────────
 function go(page, param){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('nav .links a').forEach(a=>a.classList.remove('active'));
-  document.getElementById('page-'+page).classList.add('active');
-  document.querySelector('nav .links a[data-page="'+page+'"]').classList.add('active');
+  const pg=document.getElementById('page-'+page);
+  if(pg)pg.classList.add('active');
+  const navLink=document.querySelector('nav .links a[data-page="'+page+'"]');
+  if(navLink)navLink.classList.add('active');
   if(page==='notes') loadNotes(param);
   if(page==='guestbook') loadGuestbook();
   if(page==='portfolio') loadPortfolio();
+  // SEO: 动态标题
+  const titles={home:'Heron Wang · 个人空间',notes:'技术笔记 · Heron Wang',guestbook:'访客留言 · Heron Wang',portfolio:'作品集 · Heron Wang'};
+  document.title=titles[page]||'Heron Wang';
   window.scrollTo(0,0);
+  closeMobileMenu();
+  hideToc();
 }
+
+// ── 主题切换 ──────────────────────────────
+function toggleTheme(){
+  document.body.classList.toggle('light');
+  const isLight=document.body.classList.contains('light');
+  localStorage.setItem('theme',isLight?'light':'dark');
+  const btn=document.getElementById('themeBtn');
+  if(btn)btn.textContent=isLight?'☀️':'🌙';
+  const btn2=document.getElementById('themeBtnMobile');
+  if(btn2)btn2.textContent=(isLight?'☀️':'🌙')+' 切换主题';
+}
+(function(){const t=localStorage.getItem('theme');if(t==='light'){document.body.classList.add('light');const b=document.getElementById('themeBtn');if(b)b.textContent='☀️';}})();
+
+// ── 汉堡菜单 ──────────────────────────────
+function toggleMobileMenu(){document.getElementById('mobileMenu').classList.toggle('open');}
+function closeMobileMenu(){document.getElementById('mobileMenu').classList.remove('open');}
 
 // ── 工具 ──────────────────────────────────
-function toast(msg){
-  const t=document.createElement('div');t.className='toast';t.textContent=msg;
-  document.body.appendChild(t);
-  setTimeout(()=>t.remove(),2500);
-}
-function fmtTime(iso){
-  const d=new Date(iso);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
-}
+function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2500);}
+function fmtTime(iso){if(!iso)return'';const d=new Date(iso);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function escapeHtml(s){if(!s)return'';return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
-// 简易 Markdown 渲染
+// ── 代码语法高亮 ──────────────────────────
+const KEYWORDS={python:['def','class','import','from','return','if','elif','else','for','while','try','except','finally','with','as','lambda','yield','async','await','pass','break','continue','raise','global','nonlocal','del','in','not','and','or','is','None','True','False'],rust:['fn','let','mut','const','static','struct','enum','trait','impl','pub','use','mod','crate','self','super','as','in','ref','match','if','else','for','while','loop','break','continue','return','unsafe','async','await','move','dyn','where','type','Some','None','Ok','Err'],javascript:['var','let','const','function','return','if','else','for','while','do','switch','case','break','continue','new','delete','typeof','instanceof','in','of','class','extends','super','this','import','export','default','async','await','yield','try','catch','finally','throw','void','null','undefined','true','false'],go:['func','var','const','type','struct','interface','map','chan','package','import','return','if','else','for','range','switch','case','default','break','continue','go','defer','select','fallthrough','nil','true','false']};
+function highlightCode(code,lang){
+  const kw=KEYWORDS[lang]||KEYWORDS.javascript;
+  // 先转义 HTML
+  let h=escapeHtml(code);
+  // 注释 (// 和 #)
+  h=h.replace(/(\/\/[^\n]*)/g,'<span class="tok-com">$1</span>');
+  if(lang==='python'||lang==='rust')h=h=h.replace(/(#[^\n]*)/g,'<span class="tok-com">$1</span>');
+  // 字符串
+  h=h.replace(/("(?:[^"\\]|\\.)*")/g,'<span class="tok-str">$1</span>');
+  h=h.replace(/('(?:[^'\\]|\\.)*')/g,'<span class="tok-str">$1</span>');
+  // 数字
+  h=h.replace(/\b(\d+\.?\d*)\b/g,'<span class="tok-num">$1</span>');
+  // 关键字
+  const kwRe=new RegExp('\\b('+kw.join('|')+')\\b','g');
+  h=h.replace(kwRe,'<span class="tok-kw">$1</span>');
+  // 函数调用
+  h=h.replace(/(\w+)\s*\(/g,(m,name)=>{if(kw.includes(name))return m;return '<span class="tok-fn">'+name+'</span>(';});
+  return h;
+}
+
+// ── Markdown 渲染 ─────────────────────────
 function renderMarkdown(md){
   if(!md)return'';
-  // 先提取代码块，避免内部内容被渲染
+  // 提取代码块
   const codeBlocks=[];
   md=md.replace(/```(\w*)\n([\s\S]*?)```/g,(m,lang,code)=>{
     const idx=codeBlocks.length;
-    codeBlocks.push({lang,code:code.replace(/\n$/,'')});
+    codeBlocks.push({lang:lang||'text',code:code.replace(/\n$/,'')});
     return 'XXCODEBLOCK'+idx+'XXEND';
   });
-  // 转义 HTML
   let html=escapeHtml(md);
   // 表格
   html=html.replace(/^(\|.+\|)\n(\|[-: |]+\|)\n((?:\|.+\|\n?)+)/gm,(m,header,sep,body)=>{
@@ -246,47 +430,58 @@ function renderMarkdown(md){
     t+='</tbody></table>';
     return t;
   });
-  // 标题
-  html=html.replace(/^#### (.+)$/gm,'<h4 class="md-h4">$1</h4>');
-  html=html.replace(/^### (.+)$/gm,'<h3 class="md-h3">$1</h3>');
-  html=html.replace(/^## (.+)$/gm,'<h2 class="md-h2">$1</h2>');
+  // 标题（加 id 用于目录跳转）
+  html=html.replace(/^#### (.+)$/gm,(m,t)=>'<h4 class="md-h4" id="toc-'+Date.now()+'">'+t+'</h4>');
+  html=html.replace(/^### (.+)$/gm,(m,t)=>{const id='h3-'+Math.random().toString(36).substr(2,6);return '<h3 class="md-h3" id="'+id+'">'+t+'</h3>';});
+  html=html.replace(/^## (.+)$/gm,(m,t)=>{const id='h2-'+Math.random().toString(36).substr(2,6);return '<h2 class="md-h2" id="'+id+'">'+t+'</h2>';});
   html=html.replace(/^# (.+)$/gm,'<h1 class="md-h1">$1</h1>');
   // 分隔线
   html=html.replace(/^---$/gm,'<hr class="md-hr">');
   // 引用块
   html=html.replace(/^&gt; (.+)$/gm,'<blockquote class="md-quote">$1</blockquote>');
+  // 任务列表 - [x] 和 - [ ]
+  html=html.replace(/^[-*] \[x\] (.+)$/gm,'<ul class="md-task"><li><input type="checkbox" checked disabled> $1</li></ul>');
+  html=html.replace(/^[-*] \[ \] (.+)$/gm,'<ul class="md-task"><li><input type="checkbox" disabled> $1</li></ul>');
   // 有序列表
-  html=html.replace(/(?:^\d+\. .+\n?)+/gm,m=>{
-    const items=m.trim().split('\n').map(l=>l.replace(/^\d+\. /,''));
-    return '<ol class="md-ol">'+items.map(i=>'<li>'+i+'</li>').join('')+'</ol>';
-  });
+  html=html.replace(/(?:^\d+\. .+\n?)+/gm,m=>{const items=m.trim().split('\n').map(l=>l.replace(/^\d+\. /,''));return '<ol class="md-ol">'+items.map(i=>'<li>'+i+'</li>').join('')+'</ol>';});
   // 无序列表
-  html=html.replace(/(?:^[-*] .+\n?)+/gm,m=>{
-    const items=m.trim().split('\n').map(l=>l.replace(/^[-*] /,''));
-    return '<ul class="md-ul">'+items.map(i=>'<li>'+i+'</li>').join('')+'</ul>';
-  });
+  html=html.replace(/(?:^[-*] .+\n?)+/gm,m=>{const items=m.trim().split('\n').filter(l=>!l.match(/^[-*] \[/)).map(l=>l.replace(/^[-*] /,''));if(!items.length)return m;return '<ul class="md-ul">'+items.map(i=>'<li>'+i+'</li>').join('')+'</ul>';});
   // 粗体
   html=html.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
   // 斜体
   html=html.replace(/\*(.+?)\*/g,'<em>$1</em>');
   // 行内代码
   html=html.replace(/`([^`]+)`/g,'<code class="md-code">$1</code>');
+  // 图片 ![alt](url)
+  html=html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g,'<img src="$2" alt="$1" class="md-img" loading="lazy" onclick="openLightbox(this.src)">');
   // 链接
   html=html.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" class="md-link">$1</a>');
   // 换行
   html=html.replace(/\n/g,'<br>');
-  // 还原代码块
+  // 还原代码块（带语法高亮）
   html=html.replace(/XXCODEBLOCK(\d+)XXEND/g,(m,idx)=>{
     const b=codeBlocks[parseInt(idx)];
-    return '<pre class="md-pre"><code class="md-codeblock">'+b.code+'</code></pre>';
+    const highlighted=highlightCode(b.code,b.lang);
+    return '<pre class="md-pre"><code class="md-codeblock">'+highlighted+'</code></pre>';
   });
   // 合并连续 blockquote
   html=html.replace(/<\/blockquote><br><blockquote class="md-quote">/g,'<br>');
   return html;
 }
 
+// ── 图片灯箱 ──────────────────────────────
+function openLightbox(src){
+  const lb=document.createElement('div');
+  lb.className='lightbox';
+  lb.innerHTML='<img src="'+src+'">';
+  lb.onclick=()=>lb.remove();
+  document.body.appendChild(lb);
+}
+
 // ── 笔记 ──────────────────────────────────
 let allTags=[],currentTag=null,notesCache=[];
+let currentPage=1,pageSize=10,totalNotes=0,currentSort='time';
+let searchTimer=null,searchQuery='';
 
 async function loadTags(){
   const r=await fetch('/api/notes/tags');allTags=await r.json();
@@ -294,41 +489,238 @@ async function loadTags(){
   tf.innerHTML='<span class="tag '+(currentTag?'':'active')+'" onclick="filterTag(null)">全部</span>'+
     allTags.map(t=>'<span class="tag '+(currentTag===t?'active':'')+'" onclick="filterTag(\''+t+'\')">'+escapeHtml(t)+'</span>').join('');
 }
-function filterTag(t){currentTag=t;loadTags();renderNotes();}
+function filterTag(t){currentTag=t;currentPage=1;loadTags();loadNotesList();}
 
 async function loadNotes(noteId){
   await loadTags();
-  const r=await fetch('/api/notes?limit=50');
-  notesCache=await r.json();
-  if(noteId) showNote(noteId); else renderNotes();
+  // 恢复排序
+  currentSort=localStorage.getItem('noteSort')||'time';
+  document.getElementById('sortSelect').value=currentSort;
+  if(noteId) showNote(noteId); else loadNotesList();
+}
+
+async function loadNotesList(){
+  let url='/api/notes?limit='+pageSize+'&offset='+((currentPage-1)*pageSize)+'&sort='+currentSort;
+  if(currentTag)url+='&tag='+encodeURIComponent(currentTag);
+  if(searchQuery)url+='&q='+encodeURIComponent(searchQuery);
+  const r=await fetch(url);
+  const data=await r.json();
+  // 兼容数组和对象格式
+  notesCache=Array.isArray(data)?data:(data.data||data.notes||[]);
+  totalNotes=Array.isArray(data)?notesCache.length:(data.total||notesCache.length);
+  renderNotes();
+  renderPagination();
+}
+
+function onSortChange(){
+  currentSort=document.getElementById('sortSelect').value;
+  localStorage.setItem('noteSort',currentSort);
+  currentPage=1;
+  loadNotesList();
+}
+
+function onSearch(){
+  clearTimeout(searchTimer);
+  searchTimer=setTimeout(()=>{
+    searchQuery=document.getElementById('searchInput').value.trim()||document.getElementById('searchInputMobile').value.trim();
+    currentPage=1;
+    if(searchQuery){go('notes');}
+    loadNotesList();
+  },300);
 }
 
 function renderNotes(){
   let notes=notesCache;
-  if(currentTag)notes=notes.filter(n=>n.tags.includes(currentTag));
   const el=document.getElementById('notesContent');
-  if(!notes.length){el.innerHTML='<div class="empty">暂无笔记，与 Hermes 聊天后推送的内容会出现在这里。</div>';return;}
-  el.innerHTML='<div class="note-list">'+notes.map(n=>
-    '<div class="note-item" onclick="showNote('+n.id+')">'+
-    '<h3>'+escapeHtml(n.title)+'</h3>'+
-    '<div class="meta"><span class="cat">'+escapeHtml(n.category)+'</span><span>'+fmtTime(n.created_at)+'</span></div>'+
-    (n.tags.length?'<div class="tags">'+n.tags.map(t=>'<span>'+escapeHtml(t)+'</span>').join('')+'</div>':'')+
-    '<div class="preview">'+escapeHtml(n.content.substring(0,150))+'</div>'+
-    '</div>'
-  ).join('')+'</div>';
+  if(!notes.length){el.innerHTML='<div class="empty">'+(searchQuery?'没有找到相关笔记':'暂无笔记，与 Hermes 聊天后推送的内容会出现在这里。')+'</div>';return;}
+  el.innerHTML='<div class="note-list">'+notes.map(n=>{
+    let title=escapeHtml(n.title);
+    let preview=escapeHtml((n.content||'').substring(0,150));
+    // 搜索高亮
+    if(searchQuery){
+      const re=new RegExp('('+searchQuery.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+      title=title.replace(re,'<mark>$1</mark>');
+      preview=preview.replace(re,'<mark>$1</mark>');
+    }
+    return '<div class="note-item" onclick="showNote('+n.id+')">'+
+    '<h3>'+title+'</h3>'+
+    '<div class="meta"><span class="cat">'+escapeHtml(n.category||'')+'</span><span>'+fmtTime(n.created_at)+'</span>'+(n.view_count!=null?'<span class="views">👁️ '+n.view_count+'</span>':'')+'</div>'+
+    (n.tags&&n.tags.length?'<div class="tags">'+n.tags.map(t=>'<span>'+escapeHtml(t)+'</span>').join('')+'</div>':'')+
+    '<div class="preview">'+preview+'</div>'+
+    '</div>';
+  }).join('')+'</div>';
 }
 
+function renderPagination(){
+  const pages=Math.ceil(totalNotes/pageSize);
+  if(pages<=1){document.getElementById('notesContent').innerHTML+='<div style="display:none"></div>';return;}
+  let html='<div class="pagination">';
+  html+='<button onclick="goPage('+(currentPage-1)+')" '+(currentPage<=1?'disabled':'')+'>‹</button>';
+  for(let i=1;i<=pages;i++){
+    if(i===1||i===pages||Math.abs(i-currentPage)<=1){
+      html+='<button class="'+(i===currentPage?'active':'')+'" onclick="goPage('+i+')">'+i+'</button>';
+    }else if(i===currentPage-2||i===currentPage+2){
+      html+='<button disabled>…</button>';
+    }
+  }
+  html+='<button onclick="goPage('+(currentPage+1)+')" '+(currentPage>=pages?'disabled':'')+'>›</button>';
+  html+='</div>';
+  document.getElementById('notesContent').innerHTML+=html;
+}
+function goPage(p){currentPage=p;loadNotesList();window.scrollTo({top:0,behavior:'smooth'});}
+
+// ── 笔记详情 ──────────────────────────────
 async function showNote(id){
   const r=await fetch('/api/notes/'+id);
   const n=await r.json();
+  // 记录阅读次数
+  fetch('/api/notes/'+id+'/view',{method:'POST'}).catch(()=>{});
+  // SEO
+  document.title=n.title+' · Heron Wang';
+  document.querySelector('meta[name="description"]').setAttribute('content',(n.content||'').substring(0,120));
+  // 阅读字号
+  const readerFont=localStorage.getItem('readerFont')||'16';
   const el=document.getElementById('notesContent');
   el.innerHTML='<div class="note-detail">'+
-    '<span class="back" onclick="renderNotes()">← 返回列表</span>'+
+    '<div class="font-ctrl"><button onclick="adjustFont(-1)">A-</button><button onclick="adjustFont(1)">A+</button></div>'+
+    '<span class="back" onclick="loadNotesList()">← 返回列表</span>'+
     '<h2>'+escapeHtml(n.title)+'</h2>'+
-    '<div class="meta"><span>'+escapeHtml(n.category)+'</span><span>'+fmtTime(n.created_at)+'</span>'+(n.source==='hermes'?'<span>via Hermes</span>':'')+'</div>'+
-    (n.tags.length?'<div class="tags">'+n.tags.map(t=>'<span>'+escapeHtml(t)+'</span>').join('')+'</div>':'')+
-    '<div>'+renderMarkdown(n.content)+'</div>'+
+    '<div class="meta"><span>'+escapeHtml(n.category||'')+'</span><span>'+fmtTime(n.created_at)+'</span>'+(n.source==='hermes'?'<span>via Hermes</span>':'')+(n.view_count!=null?'<span class="views">👁️ '+n.view_count+'</span>':'')+'</div>'+
+    (n.tags&&n.tags.length?'<div class="tags">'+n.tags.map(t=>'<span>'+escapeHtml(t)+'</span>').join('')+'</div>':'')+
+    '<div class="note-detail-content" id="noteBody" style="--reader-font:'+readerFont+'px">'+renderMarkdown(n.content)+'</div>'+
     '</div>';
+  // 加载上一篇/下一篇
+  loadPrevNext(id);
+  // 加载相关推荐
+  loadRelated(id);
+  // 生成目录
+  buildToc();
+  // 滚动监听
+  initScrollListener();
+}
+
+function adjustFont(delta){
+  let cur=parseInt(localStorage.getItem('readerFont')||'16');
+  cur=Math.max(12,Math.min(24,cur+delta));
+  localStorage.setItem('readerFont',cur);
+  const body=document.getElementById('noteBody');
+  if(body)body.style.setProperty('--reader-font',cur+'px');
+}
+
+// ── 上一篇/下一篇 ─────────────────────────
+async function loadPrevNext(id){
+  try{
+    const [prevR,nextR]=await Promise.all([fetch('/api/notes/'+id+'/prev'),fetch('/api/notes/'+id+'/next')]);
+    const prev=prevR.ok?await prevR.json():null;
+    const next=nextR.ok?await nextR.json():null;
+    const el=document.querySelector('.note-detail');
+    if(!el)return;
+    let html='<div class="prev-next">';
+    html+=prev?'<div class="pn-item" onclick="showNote('+prev.id+')"><div class="pn-label">← 上一篇</div><div class="pn-title">'+escapeHtml(prev.title)+'</div></div>':'<div></div>';
+    html+=next?'<div class="pn-item next" onclick="showNote('+next.id+')"><div class="pn-label">下一篇 →</div><div class="pn-title">'+escapeHtml(next.title)+'</div></div>':'<div></div>';
+    html+='</div>';
+    el.insertAdjacentHTML('beforeend',html);
+  }catch(e){}
+}
+
+// ── 相关推荐 ──────────────────────────────
+async function loadRelated(id){
+  try{
+    const r=await fetch('/api/notes/'+id+'/related');
+    const list=await r.json();
+    if(!list||!list.length)return;
+    const el=document.querySelector('.note-detail');
+    if(!el)return;
+    let html='<div class="related"><h3>📚 相关推荐</h3><div class="related-list">'+
+      list.slice(0,5).map(n=>'<div class="related-item" onclick="showNote('+n.id+')">'+escapeHtml(n.title)+'</div>').join('')+
+      '</div></div>';
+    el.insertAdjacentHTML('beforeend',html);
+  }catch(e){}
+}
+
+// ── 目录大纲 ──────────────────────────────
+function buildToc(){
+  const body=document.getElementById('noteBody');
+  if(!body)return;
+  const headings=body.querySelectorAll('.md-h2, .md-h3');
+  if(headings.length<3)return;
+  let html='<div class="note-toc" id="noteToc"><h4>📖 目录</h4>';
+  headings.forEach((h,i)=>{
+    if(!h.id)h.id='heading-'+i;
+    const cls=h.classList.contains('md-h3')?'sub':'';
+    html+='<a class="'+cls+'" href="#'+h.id+'" onclick="scrollToHeading(\''+h.id+'\');return false">'+escapeHtml(h.textContent)+'</a>';
+  });
+  html+='</div>';
+  document.body.insertAdjacentHTML('beforeend',html);
+  document.getElementById('tocBtn').style.display='flex';
+}
+function scrollToHeading(id){
+  const el=document.getElementById(id);
+  if(el){el.scrollIntoView({behavior:'smooth',block:'start'});}
+}
+function toggleTocMobile(){
+  const toc=document.getElementById('noteToc');
+  if(toc){toc.style.display=toc.style.display==='none'?'block':'none';toc.style.position='fixed';toc.style.bottom='80px';toc.style.right='10px';toc.style.maxHeight='50vh';}
+}
+function hideToc(){
+  const toc=document.getElementById('noteToc');
+  if(toc)toc.remove();
+  document.getElementById('tocBtn').style.display='none';
+}
+
+// ── 滚动监听：进度条+返回顶部+目录高亮 ──────
+function initScrollListener(){
+  window.onscroll=()=>{
+    // 阅读进度
+    const body=document.getElementById('noteBody');
+    if(body){
+      const rect=body.getBoundingClientRect();
+      const total=body.offsetHeight-window.innerHeight+100;
+      const scrolled=Math.max(0,-rect.top+100);
+      const pct=Math.min(100,Math.max(0,scrolled/total*100));
+      document.getElementById('readProgress').style.width=pct+'%';
+    }
+    // 返回顶部
+    const bt=document.getElementById('backTop');
+    if(window.scrollY>window.innerHeight)bt.classList.add('show');else bt.classList.remove('show');
+    // 目录高亮
+    const headings=document.querySelectorAll('.md-h2, .md-h3');
+    let current='';
+    headings.forEach(h=>{if(h.getBoundingClientRect().top<120)current=h.id;});
+    document.querySelectorAll('#noteToc a').forEach(a=>{a.classList.toggle('active',a.getAttribute('href')==='#'+current);});
+  };
+}
+
+// ── 导入导出 ──────────────────────────────
+async function exportNotes(){
+  const r=await fetch('/api/notes?limit=999');
+  const list=await r.json();
+  const notes=Array.isArray(list)?list:(list.data||[]);
+  let md='';
+  notes.forEach(n=>{
+    md+='---\n\n';
+    md+='# '+n.title+'\n\n';
+    md+='> 分类: '+(n.category||'无')+' | 标签: '+(n.tags||[]).join(', ')+' | 时间: '+fmtTime(n.created_at)+'\n\n';
+    md+=(n.content||'')+'\n\n';
+  });
+  const blob=new Blob([md],{type:'text/markdown'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='heron-notes-'+new Date().toISOString().slice(0,10)+'.md';
+  a.click();
+  toast('已导出 '+notes.length+' 条笔记');
+}
+
+async function importNote(event){
+  const file=event.target.files[0];
+  if(!file)return;
+  const text=await file.text();
+  // 从 .md 文件提取标题（第一行 # 开头的）
+  const titleMatch=text.match(/^#\s+(.+)/m);
+  const title=titleMatch?titleMatch[1]:file.name.replace(/\.md$/,'');
+  const content=text.replace(/^#\s+.+\n*/m,'');
+  const r=await fetch('/api/notes',{method:'POST',headers:{'Content-Type':'application/json','X-API-Token':'hermes-a3f7b2e9c1d4'},body:JSON.stringify({title,content,tags:['导入'],category:'经验总结'})});
+  if(r.ok){toast('导入成功');loadNotesList();}else{toast('导入失败');}
 }
 
 // ── 留言板 ────────────────────────────────
@@ -345,7 +737,6 @@ async function loadGuestbook(){
     '</div>'
   ).join('');
 }
-
 async function submitGuestbook(){
   const name=document.getElementById('gbName').value.trim();
   const msg=document.getElementById('gbMessage').value.trim();
@@ -353,11 +744,7 @@ async function submitGuestbook(){
   if(!name){toast('请填写昵称');return;}
   if(!msg){toast('请填写留言内容');return;}
   const r=await fetch('/api/guestbook',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,message:msg,contact})});
-  if(r.ok){
-    document.getElementById('gbName').value='';document.getElementById('gbMessage').value='';document.getElementById('gbContact').value='';
-    toast('留言成功！');
-    loadGuestbook();
-  }else{toast('留言失败，请稍后再试');}
+  if(r.ok){document.getElementById('gbName').value='';document.getElementById('gbMessage').value='';document.getElementById('gbContact').value='';toast('留言成功！');loadGuestbook();}else{toast('留言失败，请稍后再试');}
 }
 
 // ── 作品集 ────────────────────────────────
@@ -370,7 +757,7 @@ async function loadPortfolio(){
     '<div class="portfolio-item">'+
     '<h3>'+escapeHtml(p.title)+'</h3>'+
     '<div class="desc">'+escapeHtml(p.description)+'</div>'+
-    (p.tech_stack.length?'<div class="tech">'+p.tech_stack.map(t=>'<span>'+escapeHtml(t)+'</span>').join('')+'</div>':'')+
+    (p.tech_stack&&p.tech_stack.length?'<div class="tech">'+p.tech_stack.map(t=>'<span>'+escapeHtml(t)+'</span>').join('')+'</div>':'')+
     '<div class="links">'+
     (p.url?'<a href="'+escapeHtml(p.url)+'" target="_blank">🔗 访问</a>':'')+
     (p.repo_url?'<a href="'+escapeHtml(p.repo_url)+'" class="secondary" target="_blank">📦 源码</a>':'')+
@@ -378,29 +765,16 @@ async function loadPortfolio(){
   ).join('');
 }
 
-// ── 初始化 ────────────────────────────────
 // ── 访问统计 + 心跳 ────────────────────────
 async function loadStats(){
-  try{
-    const r=await fetch('/api/stats',{cache:'no-cache'});
-    const d=await r.json();
-    const online=document.getElementById('statOnline');
-    const visits=document.getElementById('statVisits');
-    if(online)online.textContent=d.online;
-    if(visits)visits.textContent=d.total_visits;
-  }catch(e){}
+  try{const r=await fetch('/api/stats',{cache:'no-cache'});const d=await r.json();const o=document.getElementById('statOnline'),v=document.getElementById('statVisits');if(o)o.textContent=d.online;if(v)v.textContent=d.total_visits;}catch(e){}
 }
-function sendHeartbeat(){
-  fetch('/api/heartbeat',{cache:'no-cache'}).catch(()=>{});
-}
-// 页面加载时立即加载统计 + 发送心跳
-loadStats();
-sendHeartbeat();
-// 每 15 秒发送心跳（保持在线状态）
+function sendHeartbeat(){fetch('/api/heartbeat',{cache:'no-cache'}).catch(()=>{});}
+loadStats();sendHeartbeat();
 setInterval(sendHeartbeat,15000);
-// 每 20 秒刷新统计显示
 setInterval(loadStats,20000);
 
+// ── 启动 ──────────────────────────────────
 go('home');
 </script>
 </body>
