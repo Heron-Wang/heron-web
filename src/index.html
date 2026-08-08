@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Heron Wang · 个人空间</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg1:#0f0f23;--bg2:#1a1a3e;--bg3:#2d1b4e;--cyan:#00f5d4;--blue:#00bbf9;--purple:#9b5de5;--pink:#f15bb5;--text:#e0e0e0;--muted:#888;--card:rgba(255,255,255,0.05);--border:rgba(255,255,255,0.1)}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,var(--bg1) 0%,var(--bg2) 50%,var(--bg3) 100%);color:var(--text);min-height:100vh}
+a{color:var(--cyan);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* nav */
+nav{position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);background:rgba(15,15,35,0.8);border-bottom:1px solid var(--border);padding:0.8rem 2rem}
+nav .inner{max-width:900px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+nav .logo{font-size:1.3rem;font-weight:bold;background:linear-gradient(90deg,var(--cyan),var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+nav .links{display:flex;gap:1.5rem}
+nav .links a{color:var(--text);font-size:0.95rem;cursor:pointer;transition:color .2s}
+nav .links a:hover{color:var(--cyan);text-decoration:none}
+nav .links a.active{color:var(--cyan)}
+
+/* layout */
+.container{max-width:900px;margin:0 auto;padding:2rem 1.5rem 4rem}
+.page{display:none;animation:fade .3s ease}
+.page.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* home */
+.hero{text-align:center;padding:3rem 0 2rem}
+.hero h1{font-size:2.8rem;margin-bottom:0.5rem;background:linear-gradient(90deg,var(--cyan),var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{color:var(--muted);font-size:1.1rem}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1.5rem;margin-top:2rem}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2rem;cursor:pointer;transition:all .25s}
+.card:hover{border-color:rgba(0,245,212,0.3);transform:translateY(-4px);box-shadow:0 8px 32px rgba(0,245,212,0.1)}
+.card .icon{font-size:2.5rem;margin-bottom:1rem}
+.card h3{font-size:1.2rem;margin-bottom:0.5rem;color:var(--cyan)}
+.card p{color:var(--muted);font-size:0.9rem;line-height:1.6}
+.badge{display:inline-block;padding:0.2rem 0.8rem;background:rgba(0,245,212,0.1);border:1px solid rgba(0,245,212,0.3);border-radius:20px;color:var(--cyan);font-size:0.8rem;margin-bottom:1rem}
+.stats-row{display:flex;gap:1.5rem;justify-content:center;margin-top:1rem;font-size:0.85rem;color:var(--muted)}
+.stat-item{display:flex;align-items:center;gap:0.3rem}
+.stat-item b{color:var(--cyan);font-family:monospace;font-size:1rem}
+.stat-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite;display:inline-block}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* notes */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+.section-header h2{font-size:1.8rem;color:var(--cyan)}
+.tag-filter{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem}
+.tag{padding:0.3rem 0.9rem;border-radius:20px;font-size:0.82rem;cursor:pointer;background:var(--card);border:1px solid var(--border);color:var(--muted);transition:all .2s}
+.tag:hover,.tag.active{background:rgba(0,245,212,0.15);border-color:rgba(0,245,212,0.4);color:var(--cyan)}
+.note-list{display:flex;flex-direction:column;gap:1rem}
+.note-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;cursor:pointer;transition:all .2s}
+.note-item:hover{border-color:rgba(0,245,212,0.25)}
+.note-item h3{font-size:1.1rem;margin-bottom:0.5rem;color:var(--text)}
+.note-item .meta{display:flex;gap:0.8rem;align-items:center;font-size:0.8rem;color:var(--muted);margin-bottom:0.5rem}
+.note-item .meta .cat{color:var(--blue)}
+.note-item .tags{display:flex;gap:0.4rem;flex-wrap:wrap}
+.note-item .tags span{font-size:0.72rem;padding:0.15rem 0.5rem;border-radius:12px;background:rgba(155,93,229,0.15);color:var(--purple)}
+.note-item .preview{color:var(--muted);font-size:0.9rem;line-height:1.6;margin-top:0.5rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.note-detail{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:2rem}
+.note-detail h2{font-size:1.5rem;margin-bottom:0.5rem;color:var(--cyan)}
+.note-detail .meta{display:flex;gap:0.8rem;font-size:0.85rem;color:var(--muted);margin-bottom:1rem}
+.note-detail .tags{display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:1.5rem}
+.note-detail .tags span{font-size:0.78rem;padding:0.2rem 0.6rem;border-radius:12px;background:rgba(155,93,229,0.15);color:var(--purple)}
+.note-detail pre{background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;padding:1rem;overflow-x:auto;margin:1rem 0;font-size:0.88rem;line-height:1.6}
+.note-detail code{font-family:'Fira Code','Cascadia Code',Consolas,monospace}
+.note-detail p{line-height:1.8;margin-bottom:0.8rem}
+.note-detail .back{color:var(--cyan);cursor:pointer;font-size:0.9rem;margin-bottom:1rem;display:inline-block}
+/* Markdown 渲染样式 */
+.md-h1{font-size:1.5rem;color:var(--cyan);margin:1.5rem 0 0.8rem;font-weight:bold}
+.md-h2{font-size:1.3rem;color:var(--cyan);margin:1.2rem 0 0.6rem;font-weight:bold}
+.md-h3{font-size:1.1rem;color:var(--cyan);margin:1rem 0 0.5rem;font-weight:bold}
+.md-h4{font-size:1rem;color:var(--text);margin:0.8rem 0 0.4rem;font-weight:bold}
+.md-hr{border:none;border-top:1px solid var(--border);margin:1.5rem 0}
+.md-pre{background:rgba(0,0,0,0.35);border:1px solid var(--border);border-radius:8px;padding:1rem;overflow-x:auto;margin:1rem 0;font-size:0.85rem;line-height:1.6}
+.md-codeblock{font-family:'Fira Code','Cascadia Code',Consolas,monospace;color:var(--green);display:block;white-space:pre}
+.md-code{background:rgba(0,0,0,0.3);padding:0.15rem 0.4rem;border-radius:4px;font-size:0.85em;font-family:'Fira Code',Consolas,monospace;color:var(--pink)}
+.md-link{color:var(--blue);text-decoration:none;border-bottom:1px dotted var(--blue)}
+.md-link:hover{text-decoration:underline}
+.md-quote{border-left:3px solid var(--purple);padding:0.5rem 1rem;margin:0.8rem 0;background:rgba(155,93,229,0.08);color:var(--text-dim);border-radius:0 8px 8px 0}
+.md-ul{margin:0.5rem 0 0.8rem 1.5rem;list-style:disc}
+.md-ol{margin:0.5rem 0 0.8rem 1.5rem;list-style:decimal}
+.md-ul li,.md-ol li{line-height:1.8;margin-bottom:0.2rem}
+.md-table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:0.85rem}
+.md-table th{background:rgba(0,245,212,0.1);border:1px solid var(--border);padding:0.5rem 0.7rem;text-align:left;color:var(--cyan);font-weight:bold}
+.md-table td{border:1px solid var(--border);padding:0.5rem 0.7rem}
+.md-table tr:nth-child(even){background:rgba(255,255,255,0.02)}
+.empty{text-align:center;padding:3rem;color:var(--muted)}
+
+/* guestbook */
+.guestbook-form{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:2rem}
+.guestbook-form input,.guestbook-form textarea{width:100%;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;padding:0.7rem 1rem;color:var(--text);font-size:0.95rem;font-family:inherit;margin-bottom:0.8rem}
+.guestbook-form input:focus,.guestbook-form textarea:focus{outline:none;border-color:rgba(0,245,212,0.4)}
+.guestbook-form textarea{resize:vertical;min-height:80px}
+.guestbook-form .row{display:flex;gap:0.8rem}
+.guestbook-form .row input{flex:1}
+.btn{padding:0.7rem 1.8rem;background:linear-gradient(90deg,var(--cyan),var(--blue));color:var(--bg1);border:none;border-radius:8px;font-size:0.95rem;font-weight:bold;cursor:pointer;transition:transform .15s}
+.btn:hover{transform:scale(1.03)}
+.guest-list{display:flex;flex-direction:column;gap:1rem}
+.guest-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem 1.5rem}
+.guest-item .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem}
+.guest-item .name{color:var(--cyan);font-weight:bold}
+.guest-item .time{color:var(--muted);font-size:0.8rem}
+.guest-item .msg{color:var(--text);line-height:1.6}
+.guest-item .contact{color:var(--muted);font-size:0.8rem;margin-top:0.3rem}
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:rgba(30,30,60,0.95);border:1px solid rgba(0,245,212,0.3);border-radius:8px;padding:0.8rem 1.5rem;color:var(--cyan);z-index:200;animation:fade .3s}
+
+/* portfolio */
+.portfolio-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem}
+.portfolio-item{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.8rem;transition:all .25s}
+.portfolio-item:hover{border-color:rgba(0,245,212,0.25);transform:translateY(-4px);box-shadow:0 8px 32px rgba(0,245,212,0.1)}
+.portfolio-item h3{font-size:1.2rem;color:var(--cyan);margin-bottom:0.5rem}
+.portfolio-item .desc{color:var(--muted);font-size:0.9rem;line-height:1.6;margin-bottom:1rem}
+.portfolio-item .tech{display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:1rem}
+.portfolio-item .tech span{font-size:0.75rem;padding:0.2rem 0.6rem;border-radius:10px;background:rgba(0,187,249,0.15);color:var(--blue)}
+.portfolio-item .links{display:flex;gap:0.8rem}
+.portfolio-item .links a{font-size:0.85rem;padding:0.4rem 1rem;border-radius:8px;background:rgba(0,245,212,0.1);border:1px solid rgba(0,245,212,0.3);color:var(--cyan);text-decoration:none;transition:all .2s}
+.portfolio-item .links a:hover{background:rgba(0,245,212,0.2)}
+.portfolio-item .links a.secondary{background:rgba(155,93,229,0.1);border-color:rgba(155,93,229,0.3);color:var(--purple)}
+
+footer{text-align:center;padding:2rem;color:var(--muted);font-size:0.82rem;border-top:1px solid var(--border);margin-top:3rem}
+@media(max-width:600px){.hero h1{font-size:2rem}.cards{grid-template-columns:1fr}nav .links{gap:1rem}}
+</style>
+</head>
+<body>
+<nav>
+<div class="inner">
+<span class="logo" onclick="go('home')">Heron Wang</span>
+<div class="links">
+<a data-page="home" onclick="go('home')">首页</a>
+<a data-page="notes" onclick="go('notes')">笔记</a>
+<a data-page="guestbook" onclick="go('guestbook')">留言</a>
+<a data-page="portfolio" onclick="go('portfolio')">作品集</a>
+</div>
+</div>
+</nav>
+
+<div class="container">
+
+<!-- 首页 -->
+<div class="page" id="page-home">
+<div class="hero">
+<div class="badge">Cloudflare Tunnel · Online</div>
+<h1>Heron Wang</h1>
+<p>技术探索 · 踩坑记录 · 作品分享</p>
+<div class="stats-row" id="statsRow">
+  <span class="stat-item"><span class="stat-dot"></span>在线 <b id="statOnline">-</b></span>
+  <span class="stat-item">累计访问 <b id="statVisits">-</b></span>
+</div>
+</div>
+<div class="cards">
+<div class="card" onclick="go('notes')">
+<div class="icon">📝</div>
+<h3>技术笔记</h3>
+<p>与 Hermes 聊天中总结的技术踩坑与经验，自动脱敏后推送。</p>
+</div>
+<div class="card" onclick="go('guestbook')">
+<div class="icon">💬</div>
+<h3>访客留言</h3>
+<p>留下你的想法和建议，欢迎交流。</p>
+</div>
+<div class="card" onclick="go('portfolio')">
+<div class="icon">🚀</div>
+<h3>作品集</h3>
+<p>个人项目与作品展示，每个作品独立部署，点击访问。</p>
+</div>
+</div>
+</div>
+
+<!-- 笔记 -->
+<div class="page" id="page-notes">
+<div class="section-header"><h2>📝 技术笔记</h2></div>
+<div class="tag-filter" id="tagFilter"></div>
+<div id="notesContent">
+<div class="note-list" id="noteList"></div>
+</div>
+</div>
+
+<!-- 留言板 -->
+<div class="page" id="page-guestbook">
+<div class="section-header"><h2>💬 访客留言</h2></div>
+<div class="guestbook-form">
+<div class="row">
+<input id="gbName" placeholder="昵称 *" maxlength="30">
+<input id="gbContact" placeholder="联系方式（选填）" maxlength="50">
+</div>
+<textarea id="gbMessage" placeholder="写下你的留言..." maxlength="500"></textarea>
+<button class="btn" onclick="submitGuestbook()">提交留言</button>
+</div>
+<div class="guest-list" id="guestList"></div>
+</div>
+
+<!-- 作品集 -->
+<div class="page" id="page-portfolio">
+<div class="section-header"><h2>🚀 作品集</h2></div>
+<div class="portfolio-grid" id="portfolioGrid"></div>
+</div>
+
+</div>
+
+<footer>Powered by Python 3 · Cloudflare Tunnel · heronwang.cn</footer>
+
+<script>
+// ── 路由 ──────────────────────────────────
+function go(page, param){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('nav .links a').forEach(a=>a.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelector('nav .links a[data-page="'+page+'"]').classList.add('active');
+  if(page==='notes') loadNotes(param);
+  if(page==='guestbook') loadGuestbook();
+  if(page==='portfolio') loadPortfolio();
+  window.scrollTo(0,0);
+}
+
+// ── 工具 ──────────────────────────────────
+function toast(msg){
+  const t=document.createElement('div');t.className='toast';t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2500);
+}
+function fmtTime(iso){
+  const d=new Date(iso);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+}
+function escapeHtml(s){if(!s)return'';return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// 简易 Markdown 渲染
+function renderMarkdown(md){
+  if(!md)return'';
+  // 先提取代码块，避免内部内容被渲染
+  const codeBlocks=[];
+  md=md.replace(/```(\w*)\n([\s\S]*?)```/g,(m,lang,code)=>{
+    const idx=codeBlocks.length;
+    codeBlocks.push({lang,code:code.replace(/\n$/,'')});
+    return '\\x00CODEBLOCK'+idx+'\\x00';
+  });
+  // 转义 HTML
+  let html=escapeHtml(md);
+  // 表格
+  html=html.replace(/^(\|.+\|)\n(\|[-: |]+\|)\n((?:\|.+\|\n?)+)/gm,(m,header,sep,body)=>{
+    const hCells=header.split('|').filter(c=>c.trim());
+    const bRows=body.trim().split('\n').map(r=>r.split('|').filter(c=>c.trim()));
+    let t='<table class="md-table"><thead><tr>'+hCells.map(c=>'<th>'+c+'</th>').join('')+'</tr></thead><tbody>';
+    bRows.forEach(r=>{t+='<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>';});
+    t+='</tbody></table>';
+    return t;
+  });
+  // 标题
+  html=html.replace(/^#### (.+)$/gm,'<h4 class="md-h4">$1</h4>');
+  html=html.replace(/^### (.+)$/gm,'<h3 class="md-h3">$1</h3>');
+  html=html.replace(/^## (.+)$/gm,'<h2 class="md-h2">$1</h2>');
+  html=html.replace(/^# (.+)$/gm,'<h1 class="md-h1">$1</h1>');
+  // 分隔线
+  html=html.replace(/^---$/gm,'<hr class="md-hr">');
+  // 引用块
+  html=html.replace(/^&gt; (.+)$/gm,'<blockquote class="md-quote">$1</blockquote>');
+  // 有序列表
+  html=html.replace(/(?:^\d+\. .+\n?)+/gm,m=>{
+    const items=m.trim().split('\n').map(l=>l.replace(/^\d+\. /,''));
+    return '<ol class="md-ol">'+items.map(i=>'<li>'+i+'</li>').join('')+'</ol>';
+  });
+  // 无序列表
+  html=html.replace(/(?:^[-*] .+\n?)+/gm,m=>{
+    const items=m.trim().split('\n').map(l=>l.replace(/^[-*] /,''));
+    return '<ul class="md-ul">'+items.map(i=>'<li>'+i+'</li>').join('')+'</ul>';
+  });
+  // 粗体
+  html=html.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  // 斜体
+  html=html.replace(/\*(.+?)\*/g,'<em>$1</em>');
+  // 行内代码
+  html=html.replace(/`([^`]+)`/g,'<code class="md-code">$1</code>');
+  // 链接
+  html=html.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" class="md-link">$1</a>');
+  // 换行
+  html=html.replace(/\n/g,'<br>');
+  // 还原代码块
+  html=html.replace(/\x00CODEBLOCK(\d+)\x00/g,(m,idx)=>{
+    const b=codeBlocks[parseInt(idx)];
+    return '<pre class="md-pre"><code class="md-codeblock">'+b.code+'</code></pre>';
+  });
+  // 合并连续 blockquote
+  html=html.replace(/<\/blockquote><br><blockquote class="md-quote">/g,'<br>');
+  return html;
+}
+
+// ── 笔记 ──────────────────────────────────
+let allTags=[],currentTag=null,notesCache=[];
+
+async function loadTags(){
+  const r=await fetch('/api/notes/tags');allTags=await r.json();
+  const tf=document.getElementById('tagFilter');
+  tf.innerHTML='<span class="tag '+(currentTag?'':'active')+'" onclick="filterTag(null)">全部</span>'+
+    allTags.map(t=>'<span class="tag '+(currentTag===t?'active':'')+'" onclick="filterTag(\''+t+'\')">'+escapeHtml(t)+'</span>').join('');
+}
+function filterTag(t){currentTag=t;loadTags();renderNotes();}
+
+async function loadNotes(noteId){
+  await loadTags();
+  const r=await fetch('/api/notes?limit=50');
+  notesCache=await r.json();
+  if(noteId) showNote(noteId); else renderNotes();
+}
+
+function renderNotes(){
+  let notes=notesCache;
+  if(currentTag)notes=notes.filter(n=>n.tags.includes(currentTag));
+  const el=document.getElementById('notesContent');
+  if(!notes.length){el.innerHTML='<div class="empty">暂无笔记，与 Hermes 聊天后推送的内容会出现在这里。</div>';return;}
+  el.innerHTML='<div class="note-list">'+notes.map(n=>
+    '<div class="note-item" onclick="showNote('+n.id+')">'+
+    '<h3>'+escapeHtml(n.title)+'</h3>'+
+    '<div class="meta"><span class="cat">'+escapeHtml(n.category)+'</span><span>'+fmtTime(n.created_at)+'</span></div>'+
+    (n.tags.length?'<div class="tags">'+n.tags.map(t=>'<span>'+escapeHtml(t)+'</span>').join('')+'</div>':'')+
+    '<div class="preview">'+escapeHtml(n.content.substring(0,150))+'</div>'+
+    '</div>'
+  ).join('')+'</div>';
+}
+
+async function showNote(id){
+  const r=await fetch('/api/notes/'+id);
+  const n=await r.json();
+  const el=document.getElementById('notesContent');
+  el.innerHTML='<div class="note-detail">'+
+    '<span class="back" onclick="renderNotes()">← 返回列表</span>'+
+    '<h2>'+escapeHtml(n.title)+'</h2>'+
+    '<div class="meta"><span>'+escapeHtml(n.category)+'</span><span>'+fmtTime(n.created_at)+'</span>'+(n.source==='hermes'?'<span>via Hermes</span>':'')+'</div>'+
+    (n.tags.length?'<div class="tags">'+n.tags.map(t=>'<span>'+escapeHtml(t)+'</span>').join('')+'</div>':'')+
+    '<div>'+renderMarkdown(n.content)+'</div>'+
+    '</div>';
+}
+
+// ── 留言板 ────────────────────────────────
+async function loadGuestbook(){
+  const r=await fetch('/api/guestbook');
+  const list=await r.json();
+  const el=document.getElementById('guestList');
+  if(!list.length){el.innerHTML='<div class="empty">还没有留言，来抢个沙发吧！</div>';return;}
+  el.innerHTML=list.map(g=>
+    '<div class="guest-item">'+
+    '<div class="head"><span class="name">'+escapeHtml(g.name)+'</span><span class="time">'+fmtTime(g.created_at)+'</span></div>'+
+    '<div class="msg">'+escapeHtml(g.message)+'</div>'+
+    (g.contact?'<div class="contact">📧 '+escapeHtml(g.contact)+'</div>':'')+
+    '</div>'
+  ).join('');
+}
+
+async function submitGuestbook(){
+  const name=document.getElementById('gbName').value.trim();
+  const msg=document.getElementById('gbMessage').value.trim();
+  const contact=document.getElementById('gbContact').value.trim();
+  if(!name){toast('请填写昵称');return;}
+  if(!msg){toast('请填写留言内容');return;}
+  const r=await fetch('/api/guestbook',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,message:msg,contact})});
+  if(r.ok){
+    document.getElementById('gbName').value='';document.getElementById('gbMessage').value='';document.getElementById('gbContact').value='';
+    toast('留言成功！');
+    loadGuestbook();
+  }else{toast('留言失败，请稍后再试');}
+}
+
+// ── 作品集 ────────────────────────────────
+async function loadPortfolio(){
+  const r=await fetch('/api/portfolio');
+  const list=await r.json();
+  const el=document.getElementById('portfolioGrid');
+  if(!list.length){el.innerHTML='<div class="empty">暂无作品，敬请期待。</div>';return;}
+  el.innerHTML=list.map(p=>
+    '<div class="portfolio-item">'+
+    '<h3>'+escapeHtml(p.title)+'</h3>'+
+    '<div class="desc">'+escapeHtml(p.description)+'</div>'+
+    (p.tech_stack.length?'<div class="tech">'+p.tech_stack.map(t=>'<span>'+escapeHtml(t)+'</span>').join('')+'</div>':'')+
+    '<div class="links">'+
+    (p.url?'<a href="'+escapeHtml(p.url)+'" target="_blank">🔗 访问</a>':'')+
+    (p.repo_url?'<a href="'+escapeHtml(p.repo_url)+'" class="secondary" target="_blank">📦 源码</a>':'')+
+    '</div></div>'
+  ).join('');
+}
+
+// ── 初始化 ────────────────────────────────
+// ── 访问统计 + 心跳 ────────────────────────
+async function loadStats(){
+  try{
+    const r=await fetch('/api/stats',{cache:'no-cache'});
+    const d=await r.json();
+    const online=document.getElementById('statOnline');
+    const visits=document.getElementById('statVisits');
+    if(online)online.textContent=d.online;
+    if(visits)visits.textContent=d.total_visits;
+  }catch(e){}
+}
+function sendHeartbeat(){
+  fetch('/api/heartbeat',{cache:'no-cache'}).catch(()=>{});
+}
+// 页面加载时立即加载统计 + 发送心跳
+loadStats();
+sendHeartbeat();
+// 每 15 秒发送心跳（保持在线状态）
+setInterval(sendHeartbeat,15000);
+// 每 20 秒刷新统计显示
+setInterval(loadStats,20000);
+
+go('home');
+</script>
+</body>
+</html>
