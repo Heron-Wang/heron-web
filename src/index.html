@@ -262,10 +262,17 @@ footer{text-align:center;padding:2rem;color:var(--muted);font-size:0.82rem;borde
   .note-detail-content{font-size:var(--reader-font,16px)!important}
   .section-header h2{font-size:1.4rem}
 }
+/* 边缘滑动返回手势 */
+.edge-back{position:fixed;top:0;left:0;width:0;height:100%;z-index:9999;background:linear-gradient(90deg,rgba(0,245,212,0.15),transparent);transition:width .2s ease;pointer-events:none}
+.edge-back.active{width:40px;pointer-events:auto}
+.edge-back::after{content:'‹';position:absolute;top:50%;left:8px;transform:translateY(-50%);font-size:24px;color:var(--cyan);opacity:0;transition:opacity .2s}
+.edge-back.active::after{opacity:1}
+@media(min-width:768px){.edge-back{display:none}}
 </style>
 </head>
 <body>
 
+<div class="edge-back" id="edgeBack"></div>
 <div class="read-progress" id="readProgress"></div>
 
 <nav>
@@ -432,6 +439,16 @@ footer{text-align:center;padding:2rem;color:var(--muted);font-size:0.82rem;borde
 <script>
 // ── 路由 ──────────────────────────────────
 function go(page, param){
+  // 记录浏览历史，让边缘滑动返回生效
+  // 跳过初始加载的 go('home')，避免历史栈第一步就 push
+  if(window._currentPage===page)return; // 同一页不重复 push
+  if(window._currentPage!==undefined){
+    history.pushState({page,param},'', '#'+page);
+  }else{
+    // 首次加载，用 replaceState 设置初始状态
+    history.replaceState({page,param},'', '#'+page);
+  }
+  window._currentPage=page;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('nav .links a').forEach(a=>a.classList.remove('active'));
   const pg=document.getElementById('page-'+page);
@@ -450,6 +467,39 @@ function go(page, param){
   closeMobileMenu();
   hideToc();
 }
+
+// 监听浏览器返回，恢复上一个页面
+// 标记是否是站内导航触发的 popstate
+window._isInternalNav=false;
+window.addEventListener('popstate',function(e){
+  var st=e.state;
+  if(st&&st.page){
+    window._currentPage=st.page;
+    var pg=document.getElementById('page-'+st.page);
+    if(pg){
+      document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+      pg.classList.add('active');
+      document.querySelectorAll('nav .links a').forEach(a=>a.classList.remove('active'));
+      var navLink=document.querySelector('nav .links a[data-page="'+st.page+'"]');
+      if(navLink)navLink.classList.add('active');
+      if(st.page==='notes') loadNotes(st.param);
+      if(st.page==='guestbook') loadGuestbook();
+      if(st.page==='portfolio') loadPortfolio();
+      if(st.page==='timeline') loadTimeline();
+      if(st.page==='about') loadAbout();
+      const titles={home:'Heron Wang · 个人空间',notes:'技术笔记 · Heron Wang',guestbook:'访客留言 · Heron Wang',portfolio:'作品集 · Heron Wang',timeline:'时间轴 · Heron Wang',about:'关于 · Heron Wang'};
+      document.title=titles[st.page]||'Heron Wang';
+    }
+  }else{
+    // 没有状态（首次打开被返回），留在首页而不是退出浏览器
+    window._currentPage='home';
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    var home=document.getElementById('page-home');
+    if(home)home.classList.add('active');
+    // 重新 replaceState 防止再次返回退出
+    history.replaceState({page:'home'},'','#home');
+  }
+});
 
 // ── 主题切换 ──────────────────────────────
 function toggleTheme(){
@@ -969,6 +1019,40 @@ setInterval(loadStats,20000);
 
 // ── 启动 ──────────────────────────────────
 go('home');
+// ── 边缘滑动返回手势 ──
+(function(){
+  const edge=document.getElementById('edgeBack');
+  if(!edge)return;
+  let startX=0,active=false,hasHistory=window.history.length>1;
+  // 监听触摸开始
+  document.addEventListener('touchstart',e=>{
+    if(e.touches[0].clientX<20&&hasHistory){
+      active=true;startX=e.touches[0].clientX;
+      edge.classList.add('active');
+    }
+  },{passive:true});
+  // 触摸移动
+  document.addEventListener('touchmove',e=>{
+    if(active&&e.touches[0].clientX-startX>50){
+      edge.style.width=Math.min(60,e.touches[0].clientX)+'px';
+    }
+  },{passive:true});
+  // 触摸结束
+  document.addEventListener('touchend',e=>{
+    if(active){
+      const dx=(e.changedTouches[0]||{}).clientX-startX;
+      if(dx>80){
+        // 滑动距离够，返回上一页
+        window.history.back();
+      }
+      edge.classList.remove('active');
+      edge.style.width='';
+      active=false;
+    }
+  },{passive:true});
+  // 更新 hasHistory
+  window.addEventListener('popstate',()=>{hasHistory=window.history.length>1;});
+})();
 </script>
 </body>
 </html>

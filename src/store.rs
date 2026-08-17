@@ -9,11 +9,14 @@ use std::sync::{Arc, Mutex};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::json::{JsonParser, JsonValue};
+use crate::mdnotes::parse_markdown_note;
 use crate::models::{GuestbookEntry, Note, PortfolioItem};
-use crate::utils::now_iso;
-use crate::utils::json_escape;
+use crate::utils::{json_escape, now_iso};
 
 // ── 存储 ──────────────────────────────────────────
+
+/// 笔记文档目录（hermes-notes/doc/）
+const NOTES_DOC_DIR: &str = "../hermes-notes/doc";
 
 pub struct Store {
     pub data_dir: PathBuf,
@@ -48,13 +51,71 @@ impl Store {
         self.load_visits();
     }
 
-    // ── Notes 文件 I/O ──────────────────────────────
+    // ── Notes: 从 hermes-notes/doc/ 加载 Markdown ──
 
     pub(crate) fn notes_path(&self) -> PathBuf {
         self.data_dir.join("notes.json")
     }
 
+    /// 笔记文档目录路径（hermes-notes/doc/）
+    fn notes_doc_dir(&self) -> PathBuf {
+        PathBuf::from(NOTES_DOC_DIR)
+    }
+
+    /// 从 hermes-notes/doc/*.md 加载笔记，替代 notes.json
     pub(crate) fn load_notes(&self) {
+        let dir = self.notes_doc_dir();
+        if !dir.exists() {
+            eprintln!("⚠️ 笔记目录不存在: {:?}, 回退到 notes.json", dir);
+            self.load_notes_json();
+            return;
+        }
+
+        let mut entries: Vec<(PathBuf, String)> = Vec::new();
+        if let Ok(rd) = fs::read_dir(&dir) {
+            for entry in rd.flatten() {
+                let p = entry.path();
+                if p.extension().and_then(|e| e.to_str()) == Some("md") {
+                    if let Ok(content) = fs::read_to_string(&p) {
+                        entries.push((p, content));
+                    }
+                }
+            }
+        }
+
+        if entries.is_empty() {
+            eprintln!("⚠️ 笔记目录为空: {:?}, 回退到 notes.json", dir);
+            self.load_notes_json();
+            return;
+        }
+
+        // 按文件名排序（YYMMDD_NNN_标题.md），确保顺序稳定
+        entries.sort_by(|a, b| a.0.file_name().cmp(&b.0.file_name()));
+
+        let mut notes = self.notes.lock().unwrap();
+        notes.clear();
+        for (i, (path, content)) in entries.iter().enumerate() {
+            let id = (i + 1) as i64;
+            let (title, tags, category, source, created_at, body) =
+                parse_markdown_note(content, path);
+            notes.push(Note {
+                id,
+                title,
+                content: body,
+                tags,
+                category,
+                source,
+                sanitized: 1,
+                view_count: 0,
+                created_at: created_at.clone(),
+                updated_at: created_at,
+            });
+        }
+        println!("📝 加载 {} 条笔记 (from markdown)", notes.len());
+    }
+
+    /// 回退：从 notes.json 加载（兼容旧数据）
+    fn load_notes_json(&self) {
         let path = self.notes_path();
         if !path.exists() {
             return;
@@ -73,11 +134,9 @@ impl Store {
                                 notes.push(note);
                             }
                         }
-                        println!("📝 加载 {} 条笔记", notes.len());
+                        println!("📝 加载 {} 条笔记 (from json fallback)", notes.len());
                     }
-                    _ => {
-                        eprintln!("⚠️ notes.json 格式错误，忽略");
-                    }
+                    _ => eprintln!("⚠️ notes.json 格式错误，忽略"),
                 }
             }
             Err(e) => eprintln!("⚠️ 读取 notes.json 失败: {}", e),
@@ -85,11 +144,22 @@ impl Store {
     }
 
     pub(crate) fn save_notes(&self) {
+        // Markdown 文件模式下不回写 notes.json
+        // 笔记由 hermes-notes 仓库管理，主站只读
+        let dir = self.notes_doc_dir();
+        if dir.exists() {
+            return; // markdown 模式，跳过 JSON 写入
+        }
+        // 回退模式：写 notes.json
         let notes = self.notes.lock().unwrap();
         let parts: Vec<String> = notes.iter().map(|n| n.to_json()).collect();
         let json = format!("[{}]", parts.join(",\n"));
         if let Err(e) = fs::write(self.notes_path(), &json) {
-            eprintln!("⚠️ 保存 notes.json 失败: {} (路径: {:?})", e, self.notes_path());
+            eprintln!(
+                "⚠️ 保存 notes.json 失败: {} (路径: {:?})",
+                e,
+                self.notes_path()
+            );
         }
     }
 
@@ -315,3 +385,5 @@ impl Store {
         true
     }
 }
+
+// ── Markdown 解析见 mdnotes.rs ────────────────────

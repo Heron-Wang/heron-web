@@ -6,6 +6,7 @@ mod api;
 mod config;
 mod handler;
 mod json;
+mod mdnotes;
 mod models;
 mod redact;
 mod routes;
