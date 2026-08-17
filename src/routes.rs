@@ -5,6 +5,7 @@ use std::net::TcpStream;
 use std::sync::Arc;
 use std::time::Duration;
 
+use crate::analytics::Analytics;
 use crate::config::get_api_token;
 use crate::handler::{build_rss_xml, send_html, send_json, send_text, url_decode};
 use crate::store::Store;
@@ -157,17 +158,11 @@ fn parse_request(
 
 // ── GET 路由处理 ────────────────────────────────────
 
-pub fn handle_get(stream: &mut TcpStream, req: &Request, ip: &str, store: &Arc<Store>) {
+pub fn handle_get(stream: &mut TcpStream, req: &Request, ip: &str, store: &Arc<Store>, analytics: &Arc<Analytics>) {
     let path = req.path.as_str();
-
     if path == "/" || path == "/index.html" {
         store.record_visit(ip);
-        send_html(
-            stream,
-            INDEX_HTML,
-            200,
-            Some("public, max-age=300, s-maxage=600"),
-        );
+        send_html(stream, INDEX_HTML, 200, Some("public, max-age=300, s-maxage=600"));
         return;
     }
 
@@ -198,12 +193,7 @@ pub fn handle_get(stream: &mut TcpStream, req: &Request, ip: &str, store: &Arc<S
         return;
     }
     if path == "/markdown-it.min.js" {
-        send_text(
-            stream,
-            MARKDOWN_IT_JS,
-            200,
-            "application/javascript; charset=utf-8",
-        );
+        send_text(stream, MARKDOWN_IT_JS, 200, "application/javascript; charset=utf-8");
         return;
     }
 
@@ -393,6 +383,12 @@ pub fn handle_get(stream: &mut TcpStream, req: &Request, ip: &str, store: &Arc<S
 
     if path == "/api/documents" {
         send_json(stream, "[]", 200, Some("no-cache"));
+        return;
+    }
+
+    // ── Analytics API ──────────────────────────────
+    if path.starts_with("/api/analytics/") {
+        crate::analytics_api::handle_analytics_get(stream, req, analytics);
         return;
     }
 

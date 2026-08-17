@@ -4,19 +4,28 @@ use std::io::Write;
 use std::net::TcpStream;
 use std::sync::Arc;
 
+use crate::analytics::Analytics;
 use crate::api::{handle_delete, handle_post, handle_put};
 use crate::routes::{handle_get, Request};
 use crate::store::Store;
 
 /// 处理一个完整的 HTTP 请求（按 method 分发）
-pub fn handle_request(stream: &mut TcpStream, req: &Request, store: &Arc<Store>) {
+pub fn handle_request(stream: &mut TcpStream, req: &Request, store: &Arc<Store>, analytics: &Arc<Analytics>) {
     let ip = get_client_ip(stream, req);
+    let host = req.get_header("Host").unwrap_or("").to_string();
+    let ua = req.get_header("User-Agent").unwrap_or("").to_string();
+
+    // 记录访问（排除心跳和静态资源，避免重复计数）
+    let path = &req.path;
+    if path != "/api/heartbeat" && path != "/favicon.svg" && path != "/markdown-it.min.js" {
+        analytics.record(&ip, path, &host, &ua, 200);
+    }
 
     match req.method.as_str() {
         "OPTIONS" => {
             send_cors_preflight(stream);
         }
-        "GET" => handle_get(stream, req, &ip, store),
+        "GET" => handle_get(stream, req, &ip, store, analytics),
         "POST" => handle_post(stream, req, &ip, store),
         "PUT" => handle_put(stream, req, store),
         "DELETE" => handle_delete(stream, req, store),
@@ -26,8 +35,12 @@ pub fn handle_request(stream: &mut TcpStream, req: &Request, store: &Arc<Store>)
     }
 }
 
-/// 获取客户端 IP（支持 X-Forwarded-For）
+/// 获取客户端 IP（支持 CF-Connecting-IP 和 X-Forwarded-For）
 pub fn get_client_ip(stream: &TcpStream, req: &Request) -> String {
+    // CF Tunnel 优先
+    if let Some(ip) = req.get_header("CF-Connecting-IP") {
+        return ip.trim().to_string();
+    }
     if let Some(fwd) = req.get_header("X-Forwarded-For") {
         return fwd.split(',').next().unwrap_or("").trim().to_string();
     }

@@ -2,6 +2,8 @@
 //! 纯标准库实现，零第三方依赖。
 //! 监听 0.0.0.0:8080，多线程处理并发。
 
+mod analytics;
+mod analytics_api;
 mod api;
 mod config;
 mod handler;
@@ -18,6 +20,7 @@ use std::net::TcpListener;
 use std::sync::Arc;
 use std::thread;
 
+use analytics::Analytics;
 use config::{DATA_DIR, HOST, PORT};
 use handler::handle_request;
 use routes::read_request;
@@ -25,6 +28,7 @@ use store::Store;
 
 fn main() {
     let store = Arc::new(Store::new(DATA_DIR));
+    let analytics = Arc::new(Analytics::new(DATA_DIR));
 
     let addr = format!("{}:{}", HOST, PORT);
     let listener = match TcpListener::bind(&addr) {
@@ -45,9 +49,10 @@ fn main() {
         match incoming {
             Ok(mut stream) => {
                 let store = Arc::clone(&store);
+                let analytics = Arc::clone(&analytics);
                 thread::spawn(move || {
                     if let Some(req) = read_request(&mut stream) {
-                        handle_request(&mut stream, &req, &store);
+                        handle_request(&mut stream, &req, &store, &analytics);
                     }
                 });
             }
