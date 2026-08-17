@@ -198,6 +198,7 @@ pub fn handle_get(stream: &mut TcpStream, req: &Request, ip: &str, store: &Arc<S
     }
 
     if path == "/api/notes/tags" {
+        store.check_reload_notes();
         let tags = store.get_all_tags();
         let parts: Vec<String> = tags
             .iter()
@@ -213,6 +214,7 @@ pub fn handle_get(stream: &mut TcpStream, req: &Request, ip: &str, store: &Arc<S
     }
 
     if path == "/api/notes" {
+        store.check_reload_notes();
         let limit: usize = req
             .query_param("limit")
             .and_then(|s| s.parse().ok())
@@ -271,6 +273,7 @@ pub fn handle_get(stream: &mut TcpStream, req: &Request, ip: &str, store: &Arc<S
     }
 
     if path == "/api/notes/export" {
+        store.check_reload_notes();
         let notes = store.get_all_notes_export();
         let parts: Vec<String> = notes.iter().map(|n| n.to_json()).collect();
         send_json(
@@ -283,6 +286,7 @@ pub fn handle_get(stream: &mut TcpStream, req: &Request, ip: &str, store: &Arc<S
     }
 
     if path.starts_with("/api/notes/") {
+        store.check_reload_notes();
         let rest = &path["/api/notes/".len()..];
         let (id_part, sub) = match rest.find('/') {
             Some(pos) => (&rest[..pos], &rest[pos + 1..]),
@@ -339,6 +343,7 @@ pub fn handle_get(stream: &mut TcpStream, req: &Request, ip: &str, store: &Arc<S
     }
 
     if path == "/rss.xml" {
+        store.check_reload_notes();
         let xml = build_rss_xml(store);
         send_text(stream, &xml, 200, "application/rss+xml; charset=utf-8");
         return;

@@ -8,6 +8,28 @@ use crate::store::Store;
 use crate::utils::now_iso;
 
 impl Store {
+    // ── Notes: 热重载 ─────────────────────────────
+
+    /// 检测 doc/ 目录 .md 文件数变化，变化则自动重载（无需重启）
+    pub fn check_reload_notes(&self) {
+        let dir = self.notes_doc_dir();
+        if !dir.exists() {
+            return;
+        }
+        let current = match std::fs::read_dir(&dir) {
+            Ok(rd) => rd
+                .flatten()
+                .filter(|e| e.path().extension().and_then(|s| s.to_str()) == Some("md"))
+                .count(),
+            Err(_) => return,
+        };
+        let last = *self.notes_file_count.lock().unwrap();
+        if current != last {
+            println!("🔄 检测到笔记变化 ({} → {}), 自动重载...", last, current);
+            self.load_notes();
+        }
+    }
+
     // ── Notes: CRUD ───────────────────────────────
 
     pub fn create_note(

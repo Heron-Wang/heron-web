@@ -25,6 +25,8 @@ pub struct Store {
     pub portfolio: Arc<Mutex<Vec<PortfolioItem>>>,
     pub total_visits: Arc<Mutex<i64>>,
     pub heartbeats: Arc<Mutex<HashMap<String, u64>>>,
+    /// 上次加载的 .md 文件数，用于检测目录变化触发自动重载
+    pub(crate) notes_file_count: Arc<Mutex<usize>>,
 }
 
 impl Store {
@@ -39,6 +41,7 @@ impl Store {
             portfolio: Arc::new(Mutex::new(Vec::new())),
             total_visits: Arc::new(Mutex::new(0)),
             heartbeats: Arc::new(Mutex::new(HashMap::new())),
+            notes_file_count: Arc::new(Mutex::new(0)),
         };
         store.load_all();
         store
@@ -58,7 +61,7 @@ impl Store {
     }
 
     /// 笔记文档目录路径（hermes-notes/doc/）
-    fn notes_doc_dir(&self) -> PathBuf {
+    pub(crate) fn notes_doc_dir(&self) -> PathBuf {
         PathBuf::from(NOTES_DOC_DIR)
     }
 
@@ -111,6 +114,7 @@ impl Store {
                 updated_at: created_at,
             });
         }
+        *self.notes_file_count.lock().unwrap() = entries.len();
         println!("📝 加载 {} 条笔记 (from markdown)", notes.len());
     }
 
