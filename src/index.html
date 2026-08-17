@@ -18,6 +18,7 @@ a:hover{text-decoration:underline}
 body.light{--bg1:#f5f5f5;--bg2:#e8e8e8;--bg3:#ddd;--text:#222;--muted:#666;--card:rgba(0,0,0,0.03);--border:rgba(0,0,0,0.1)}
 body.light nav{background:rgba(255,255,255,0.85)}
 body.light .md-pre{background:rgba(0,0,0,0.05)}
+body.light .md-gutter{color:#bbb;border-right-color:rgba(0,0,0,0.1)}
 body.light .md-code{background:rgba(0,0,0,0.06)}
 
 /* ── 导航 ── */
@@ -140,8 +141,10 @@ nav .theme-btn{cursor:pointer;font-size:1.2rem;min-width:44px;min-height:44px;di
 .md-h3{font-size:1.1rem;color:var(--cyan);margin:1rem 0 0.5rem;font-weight:bold}
 .md-h4{font-size:1rem;color:var(--text);margin:0.8rem 0 0.4rem;font-weight:bold}
 .md-hr{border:none;border-top:1px solid var(--border);margin:1.5rem 0}
-.md-pre{background:rgba(0,0,0,0.35);border:1px solid var(--border);border-radius:8px;padding:1rem;overflow-x:auto;margin:1rem 0;font-size:0.85rem;line-height:1.6}
-.md-codeblock{font-family:'Fira Code','Cascadia Code',Consolas,monospace;display:block;white-space:pre}
+.md-pre{background:rgba(0,0,0,0.35);border:1px solid var(--border);border-radius:8px;margin:1rem 0;font-size:0.85rem;line-height:1.6;overflow:hidden;position:relative;display:flex}
+.md-gutter{flex-shrink:0;user-select:none;text-align:right;padding:1rem 0.6rem 1rem 1rem;color:var(--muted);opacity:0.5;white-space:pre;font-family:'Fira Code','Cascadia Code',Consolas,monospace;border-right:1px solid var(--border);line-height:1.6;overflow:hidden}
+.md-codeblock{font-family:'Fira Code','Cascadia Code',Consolas,monospace;display:block;white-space:pre-wrap;word-break:break-word;padding:1rem;flex:1;overflow-x:auto}
+.md-codeblock .md-line{display:block;min-height:1.6em}
 .md-code{background:rgba(0,0,0,0.3);padding:0.15rem 0.4rem;border-radius:4px;font-size:0.85em;font-family:'Fira Code',Consolas,monospace;color:var(--pink)}
 .md-link{color:var(--blue);text-decoration:none;border-bottom:1px dotted var(--blue)}
 .md-link:hover{text-decoration:underline}
@@ -258,7 +261,9 @@ footer{text-align:center;padding:2rem;color:var(--muted);font-size:0.82rem;borde
   .font-ctrl{top:0.5rem;right:0.5rem}
   .prev-next .pn-item{min-width:100%}
   .md-table{font-size:0.75rem}
-  .md-pre{font-size:0.78rem;padding:0.6rem}
+  .md-pre{font-size:0.78rem}
+  .md-gutter{padding:0.6rem 0.4rem 0.6rem 0.6rem;font-size:0.72rem}
+  .md-codeblock{padding:0.6rem}
   .note-detail-content{font-size:var(--reader-font,16px)!important}
   .section-header h2{font-size:1.4rem}
 }
@@ -525,24 +530,32 @@ function escapeHtml(s){if(!s)return'';return s.replace(/&/g,'&amp;').replace(/</
 
 // ── 代码语法高亮 ──────────────────────────
 const KEYWORDS={python:['def','class','import','from','return','if','elif','else','for','while','try','except','finally','with','as','lambda','yield','async','await','pass','break','continue','raise','global','nonlocal','del','in','not','and','or','is','None','True','False'],rust:['fn','let','mut','const','static','struct','enum','trait','impl','pub','use','mod','crate','self','super','as','in','ref','match','if','else','for','while','loop','break','continue','return','unsafe','async','await','move','dyn','where','type','Some','None','Ok','Err'],javascript:['var','let','const','function','return','if','else','for','while','do','switch','case','break','continue','new','delete','typeof','instanceof','in','of','class','extends','super','this','import','export','default','async','await','yield','try','catch','finally','throw','void','null','undefined','true','false'],go:['func','var','const','type','struct','interface','map','chan','package','import','return','if','else','for','range','switch','case','default','break','continue','go','defer','select','fallthrough','nil','true','false']};
-function highlightCode(code,lang){
+function highlightLine(line,lang){
+  if(!line)return '';
   const kw=KEYWORDS[lang]||KEYWORDS.javascript;
-  // 先转义 HTML
-  let h=escapeHtml(code);
-  // 注释 (// 和 #)
-  h=h.replace(/(\/\/[^\n]*)/g,'<span class="tok-com">$1</span>');
-  if(lang==='python'||lang==='rust')h=h=h.replace(/(#[^\n]*)/g,'<span class="tok-com">$1</span>');
-  // 字符串
-  h=h.replace(/("(?:[^"\\]|\\.)*")/g,'<span class="tok-str">$1</span>');
-  h=h.replace(/('(?:[^'\\]|\\.)*')/g,'<span class="tok-str">$1</span>');
+  let h=escapeHtml(line);
+  // 用占位符保护已匹配的 span，避免后续正则污染 HTML 属性
+  const slots=[];
+  function protect(html){slots.push(html);return '\x01S'+(slots.length-1)+'E\x01';}
+  function restore(text){return text.replace(/\x01S(\d+)E\x01/g,(m,id)=>slots[parseInt(id)]);}
+  // 注释 (// 和 #) — 匹配到行尾
+  h=h.replace(/(\/\/[^\n]*)/g,m=>protect('<span class="tok-com">'+m+'</span>'));
+  if(lang==='python'||lang==='rust')h=h.replace(/(#[^\n]*)/g,m=>protect('<span class="tok-com">'+m+'</span>'));
+  // 字符串 (匹配原始引号，escapeHtml 不转义 " 和 ')
+  h=h.replace(/("(?:[^"\\]|\\.)*")/g,m=>protect('<span class="tok-str">'+m+'</span>'));
+  h=h.replace(/('(?:[^'\\]|\\.)*')/g,m=>protect('<span class="tok-str">'+m+'</span>'));
   // 数字
-  h=h.replace(/\b(\d+\.?\d*)\b/g,'<span class="tok-num">$1</span>');
+  h=h.replace(/\b(\d+\.?\d*)\b/g,(m,n)=>protect('<span class="tok-num">'+n+'</span>'));
   // 关键字
   const kwRe=new RegExp('\\b('+kw.join('|')+')\\b','g');
   h=h.replace(kwRe,'<span class="tok-kw">$1</span>');
   // 函数调用
   h=h.replace(/(\w+)\s*\(/g,(m,name)=>{if(kw.includes(name))return m;return '<span class="tok-fn">'+name+'</span>(';});
-  return h;
+  return restore(h);
+}
+function highlightCode(code,lang){
+  const lines=code.split('\n');
+  return lines.map(l=>highlightLine(l,lang)).join('\n');
 }
 
 // ── Markdown 渲染 (markdown-it) ───────────
@@ -577,8 +590,15 @@ mdInstance.renderer.rules.fence=function(t,i,o,env,self){
   const token=t[i];
   const info=token.info?token.info.trim():'';
   const lang=info.split(/\s+/)[0]||'text';
-  const highlighted=highlightCode(token.content.replace(/\n$/,''),lang);
-  return '<pre class="md-pre"><code class="md-codeblock">'+highlighted+'</code></pre>';
+  const code=token.content.replace(/\n$/,'');
+  const lines=code.split('\n');
+  const lineCount=lines.length;
+  // 行号列
+  let gutter='';
+  for(let n=1;n<=lineCount;n++)gutter+=n+'\n';
+  // 逐行高亮，每行用 span.md-line 包裹
+  const highlighted=lines.map(l=>'<span class="md-line">'+highlightLine(l,lang)+'</span>').join('\n');
+  return '<pre class="md-pre" data-lang="'+mdInstance.utils.escapeHtml(lang)+'"><span class="md-gutter" aria-hidden="true">'+gutter+'</span><code class="md-codeblock">'+highlighted+'</code></pre>';
 };
 mdInstance.renderer.rules.image=function(t,i,o,env,self){
   const token=t[i];
