@@ -12,6 +12,7 @@ use crate::utils::json_escape;
 
 pub const INDEX_HTML: &str = include_str!("index.html");
 pub const FAVICON_SVG: &str = include_str!("../static/favicon.svg");
+pub const MARKDOWN_IT_JS: &str = include_str!("../static/markdown-it.min.js");
 
 // ── HTTP 请求结构 ──────────────────────────────────
 
@@ -194,6 +195,15 @@ pub fn handle_get(stream: &mut TcpStream, req: &Request, ip: &str, store: &Arc<S
     }
     if path == "/favicon.svg" {
         send_text(stream, FAVICON_SVG, 200, "image/svg+xml");
+        return;
+    }
+    if path == "/markdown-it.min.js" {
+        send_text(
+            stream,
+            MARKDOWN_IT_JS,
+            200,
+            "application/javascript; charset=utf-8",
+        );
         return;
     }
 

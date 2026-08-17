@@ -269,6 +269,7 @@ footer{text-align:center;padding:2rem;color:var(--muted);font-size:0.82rem;borde
 .edge-back.active::after{opacity:1}
 @media(min-width:768px){.edge-back{display:none}}
 </style>
+<script src="/markdown-it.min.js"></script>
 </head>
 <body>
 
@@ -544,62 +545,68 @@ function highlightCode(code,lang){
   return h;
 }
 
-// ── Markdown 渲染 ─────────────────────────
-function renderMarkdown(md){
-  if(!md)return'';
-  // 提取代码块
-  const codeBlocks=[];
-  md=md.replace(/```(\w*)\n([\s\S]*?)```/g,(m,lang,code)=>{
-    const idx=codeBlocks.length;
-    codeBlocks.push({lang:lang||'text',code:code.replace(/\n$/,'')});
-    return 'XXCODEBLOCK'+idx+'XXEND';
+// ── Markdown 渲染 (markdown-it) ───────────
+const mdInstance=new window.markdownit({
+  html:false,linkify:true,typographer:false,breaks:true,
+  highlight:function(code,lang){
+    return highlightCode(code,lang||'text');
+  }
+});
+// 自定义渲染规则：给元素加 md-xxx class，保持原有样式
+mdInstance.renderer.rules.heading_open=function(tokens,idx){
+  const tag=tokens[idx].tag;
+  const cls={h1:'md-h1',h2:'md-h2',h3:'md-h3',h4:'md-h4'}[tag]||'';
+  const next=tokens[idx+1];
+  let idAttr='';
+  if(next&&next.type==='inline'){
+    const slug=slugify(next.content);
+    idAttr=' id="'+slug+'"';
+  }
+  return '<'+tag+' class="'+cls+'"'+idAttr+'>';
+};
+mdInstance.renderer.rules.paragraph_open=function(){return '<p>';};
+mdInstance.renderer.rules.paragraph_close=function(){return '</p>';};
+mdInstance.renderer.rules.bullet_list_open=function(){return '<ul class="md-ul">';};
+mdInstance.renderer.rules.ordered_list_open=function(){return '<ol class="md-ol">';};
+mdInstance.renderer.rules.blockquote_open=function(){return '<blockquote class="md-quote">';};
+mdInstance.renderer.rules.hr=function(){return '<hr class="md-hr">';};
+mdInstance.renderer.rules.code_inline=function(t,i){
+  return '<code class="md-code">'+mdInstance.utils.escapeHtml(t[i].content)+'</code>';
+};
+mdInstance.renderer.rules.fence=function(t,i,o,env,self){
+  const token=t[i];
+  const info=token.info?token.info.trim():'';
+  const lang=info.split(/\s+/)[0]||'text';
+  const highlighted=highlightCode(token.content.replace(/\n$/,''),lang);
+  return '<pre class="md-pre"><code class="md-codeblock">'+highlighted+'</code></pre>';
+};
+mdInstance.renderer.rules.image=function(t,i,o,env,self){
+  const token=t[i];
+  const src=token.attrGet('src')||'';
+  const alt=token.content||'';
+  return '<img src="'+mdInstance.utils.escapeHtml(src)+'" alt="'+mdInstance.utils.escapeHtml(alt)+'" class="md-img" loading="lazy" onclick="openLightbox(this.src)">';
+};
+mdInstance.renderer.rules.link_open=function(t,i,o,env,self){
+  const href=t[i].attrGet('href')||'';
+  // 站内链接不新开窗口
+  const internal=href.startsWith('#')||href.startsWith('/');
+  const target=internal?'':' target="_blank"';
+  return '<a href="'+mdInstance.utils.escapeHtml(href)+'"'+target+' class="md-link">';
+};
+function slugify(text){
+  return 'h-'+text.toLowerCase().replace(/[^\w\u4e00-\u9fa5]+/g,'-').replace(/^-|-$/g,'').slice(0,50);
+}
+function renderMarkdown(mdText){
+  if(!mdText)return'';
+  // 任务列表支持：将 - [x] / - [ ] 转换前交给 markdown-it
+  // markdown-it 默认不解析 task lists，手动处理
+  let processed=mdText.replace(/^(\s*[-*])\s*\[([ xX])\]\s/gm,function(m,prefix,check){
+    return prefix+' '+(check==='x'||check==='X'?'✓':'☐')+' ';
   });
-  let html=escapeHtml(md);
-  // 表格
-  html=html.replace(/^(\|.+\|)\n(\|[-: |]+\|)\n((?:\|.+\|\n?)+)/gm,(m,header,sep,body)=>{
-    const hCells=header.split('|').filter(c=>c.trim());
-    const bRows=body.trim().split('\n').map(r=>r.split('|').filter(c=>c.trim()));
-    let t='<table class="md-table"><thead><tr>'+hCells.map(c=>'<th>'+c+'</th>').join('')+'</tr></thead><tbody>';
-    bRows.forEach(r=>{t+='<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>';});
-    t+='</tbody></table>';
-    return t;
-  });
-  // 标题（加 id 用于目录跳转）
-  html=html.replace(/^#### (.+)$/gm,(m,t)=>'<h4 class="md-h4" id="toc-'+Date.now()+'">'+t+'</h4>');
-  html=html.replace(/^### (.+)$/gm,(m,t)=>{const id='h3-'+Math.random().toString(36).substr(2,6);return '<h3 class="md-h3" id="'+id+'">'+t+'</h3>';});
-  html=html.replace(/^## (.+)$/gm,(m,t)=>{const id='h2-'+Math.random().toString(36).substr(2,6);return '<h2 class="md-h2" id="'+id+'">'+t+'</h2>';});
-  html=html.replace(/^# (.+)$/gm,'<h1 class="md-h1">$1</h1>');
-  // 分隔线
-  html=html.replace(/^---$/gm,'<hr class="md-hr">');
-  // 引用块
-  html=html.replace(/^&gt; (.+)$/gm,'<blockquote class="md-quote">$1</blockquote>');
-  // 任务列表 - [x] 和 - [ ]
-  html=html.replace(/^[-*] \[x\] (.+)$/gm,'<ul class="md-task"><li><input type="checkbox" checked disabled> $1</li></ul>');
-  html=html.replace(/^[-*] \[ \] (.+)$/gm,'<ul class="md-task"><li><input type="checkbox" disabled> $1</li></ul>');
-  // 有序列表
-  html=html.replace(/(?:^\d+\. .+\n?)+/gm,m=>{const items=m.trim().split('\n').map(l=>l.replace(/^\d+\. /,''));return '<ol class="md-ol">'+items.map(i=>'<li>'+i+'</li>').join('')+'</ol>';});
-  // 无序列表
-  html=html.replace(/(?:^[-*] .+\n?)+/gm,m=>{const items=m.trim().split('\n').filter(l=>!l.match(/^[-*] \[/)).map(l=>l.replace(/^[-*] /,''));if(!items.length)return m;return '<ul class="md-ul">'+items.map(i=>'<li>'+i+'</li>').join('')+'</ul>';});
-  // 粗体
-  html=html.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
-  // 斜体
-  html=html.replace(/\*(.+?)\*/g,'<em>$1</em>');
-  // 行内代码
-  html=html.replace(/`([^`]+)`/g,'<code class="md-code">$1</code>');
-  // 图片 ![alt](url)
-  html=html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g,'<img src="$2" alt="$1" class="md-img" loading="lazy" onclick="openLightbox(this.src)">');
-  // 链接
-  html=html.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" class="md-link">$1</a>');
-  // 换行
-  html=html.replace(/\n/g,'<br>');
-  // 还原代码块（带语法高亮）
-  html=html.replace(/XXCODEBLOCK(\d+)XXEND/g,(m,idx)=>{
-    const b=codeBlocks[parseInt(idx)];
-    const highlighted=highlightCode(b.code,b.lang);
-    return '<pre class="md-pre"><code class="md-codeblock">'+highlighted+'</code></pre>';
-  });
-  // 合并连续 blockquote
-  html=html.replace(/<\/blockquote><br><blockquote class="md-quote">/g,'<br>');
+  let html=mdInstance.render(processed);
+  // 给 table 添加 md-table class
+  html=html.replace(/<table>/g,'<table class="md-table">');
+  html=html.replace(/<\/blockquote>\s*<p><\/p>\s*<blockquote/g,'</blockquote><blockquote');
   return html;
 }
 
