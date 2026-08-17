@@ -594,7 +594,7 @@ mdInstance.renderer.rules.fence=function(t,i,o,env,self){
   const lang=info.split(/\s+/)[0]||'text';
   const code=token.content.replace(/\n$/,'');
   const lines=code.split('\n');
-  const highlighted=lines.map(l=>'<span class="md-line">'+highlightLine(l,lang)+'</span>').join('\n');
+  const highlighted=lines.map(l=>'<span class="md-line">'+highlightLine(l,lang)+'</span>').join('');
   return '<pre class="md-pre" data-lang="'+mdInstance.utils.escapeHtml(lang)+'"><code class="md-codeblock">'+highlighted+'</code></pre>';
 };
 mdInstance.renderer.rules.image=function(t,i,o,env,self){
